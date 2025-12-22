@@ -290,9 +290,18 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
           </Button>
         ))}
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Les scénarios pré-remplissent les paramètres avec des valeurs types selon la taille et le secteur d'activité. Tous les champs restent modifiables.
-        </p>
+        <div className="text-xs text-muted-foreground mt-3 space-y-1">
+          <p className="font-medium">Caractéristiques des scénarios :</p>
+          <ul className="list-disc list-inside space-y-0.5 ml-1">
+            <li><strong>Vide</strong> — Formulaire vierge pour saisie libre</li>
+            <li><strong>Startup SaaS</strong> — CA 1,2M€, pas de dividendes, investissement R&D élevé, designer cadre à 4 300€ brut</li>
+            <li><strong>PME Industrie</strong> — CA 8,2M€, achats matières importants, dividendes 180k€, technicien non-cadre à 2 400€</li>
+            <li><strong>Commerce Multi-TVA</strong> — CA 3,1M€, 3 taux TVA (5.5%, 10%, 20%), marges retail, vendeur à 1 850€</li>
+            <li><strong>Association</strong> — Subventions 480k€, pas d'IS ni TVA, pas de dividendes, coordinateur cadre à 2 900€</li>
+            <li><strong>Grand Groupe</strong> — CA 95M€, 1500 salariés, cadre dirigeant à 14 000€ brut + bonus + voiture</li>
+            <li><strong>TPE Artisan</strong> — CA 420k€, sous-traitance, TVA réduite (10%), compagnon à 2 150€ + panier</li>
+          </ul>
+        </div>
       </div>
       
       {/* Salarié - MOVED TO FIRST */}
