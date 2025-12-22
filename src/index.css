@@ -2,95 +2,132 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+@import '@fontsource/dm-sans/400.css';
+@import '@fontsource/dm-sans/500.css';
+@import '@fontsource/dm-sans/600.css';
+@import '@fontsource/dm-sans/700.css';
+@import '@fontsource/space-mono/400.css';
+@import '@fontsource/space-mono/700.css';
+
+/* Design System for "Relevé de contribution mensuel" 
+   Blue-focused professional document theme
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
+    /* Core Blues */
+    --primary: 217 91% 50%;
+    --primary-light: 217 91% 60%;
+    --primary-dark: 217 91% 40%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Gradient Blues */
+    --blue-100: 214 100% 97%;
+    --blue-200: 214 95% 93%;
+    --blue-300: 213 94% 85%;
+    --blue-400: 217 91% 70%;
+    --blue-500: 217 91% 50%;
+    --blue-600: 217 91% 40%;
+    --blue-700: 217 91% 30%;
+    
+    /* Background & Surfaces */
+    --background: 0 0% 98%;
+    --foreground: 222 47% 11%;
+    
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
+    --card-foreground: 222 47% 11%;
+    
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
+    --popover-foreground: 222 47% 11%;
+    
+    /* Secondary for form backgrounds */
+    --secondary: 214 32% 96%;
+    --secondary-foreground: 222 47% 11%;
+    
+    /* Muted for subtle elements */
+    --muted: 214 32% 91%;
+    --muted-foreground: 215 16% 47%;
+    
+    /* Accent for highlights */
+    --accent: 217 91% 95%;
+    --accent-foreground: 217 91% 40%;
+    
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Borders */
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 50%;
+    
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Document specific */
+    --document-bg: 0 0% 100%;
+    --section-border: 217 91% 70%;
+    --highlight-box: 214 100% 97%;
+    
+    /* Part colors */
+    --part-capital: 217 91% 50%;
+    --part-fonctionnelle: 217 91% 45%;
+    --part-sociale: 217 91% 55%;
+    --part-personnelle: 217 91% 60%;
+    
+    /* Sidebar for stacked bar */
+    --sidebar-background: 217 91% 50%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 217 91% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 217 91% 60%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217 91% 40%;
+    --sidebar-ring: 217 91% 50%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --primary: 217 91% 60%;
+    --primary-light: 217 91% 70%;
+    --primary-dark: 217 91% 50%;
+    --primary-foreground: 0 0% 100%;
+    
+    --background: 222 47% 8%;
+    --foreground: 214 32% 91%;
+    
+    --card: 222 47% 11%;
+    --card-foreground: 214 32% 91%;
+    
+    --popover: 222 47% 11%;
+    --popover-foreground: 214 32% 91%;
+    
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 214 32% 91%;
+    
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    
+    --accent: 217 33% 17%;
+    --accent-foreground: 217 91% 70%;
+    
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 100%;
+    
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 217 91% 60%;
+    
+    --document-bg: 222 47% 11%;
+    --section-border: 217 91% 50%;
+    --highlight-box: 217 33% 17%;
+    
+    --sidebar-background: 217 91% 40%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 217 91% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 217 91% 55%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217 91% 35%;
+    --sidebar-ring: 217 91% 50%;
   }
 }
 
@@ -100,6 +137,102 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  
+  html {
+    font-family: 'DM Sans', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  /* Document Styles */
+  .document-a4 {
+    @apply bg-card shadow-xl;
+    width: 210mm;
+    min-height: 297mm;
+    padding: 20mm 15mm;
+  }
+  
+  /* Stacked Bar Gradient */
+  .stacked-bar-gradient {
+    background: linear-gradient(
+      to bottom,
+      hsl(var(--blue-400)) 0%,
+      hsl(var(--blue-500)) 25%,
+      hsl(var(--blue-600)) 50%,
+      hsl(var(--blue-700)) 75%,
+      hsl(var(--blue-700)) 100%
+    );
+  }
+  
+  /* Section Separator */
+  .section-separator {
+    @apply border-t border-dashed;
+    border-color: hsl(var(--primary) / 0.3);
+  }
+  
+  /* Highlight Box (explanatory text) */
+  .highlight-box {
+    @apply rounded-lg p-4;
+    background-color: hsl(var(--highlight-box));
+    border: 1px solid hsl(var(--section-border) / 0.2);
+  }
+  
+  /* Amount Display - Stylized numbers */
+  .amount-display {
+    font-family: 'Space Mono', monospace;
+    @apply font-bold tracking-tight;
+    color: hsl(var(--primary));
+  }
+  
+  /* Form Section */
+  .form-section {
+    @apply bg-card rounded-xl p-6 shadow-sm border;
+  }
+  
+  /* Part labels */
+  .part-label {
+    @apply text-sm font-medium uppercase tracking-wide;
+    color: hsl(var(--primary));
+  }
+  
+  /* Percentage badge */
+  .pct-badge {
+    @apply text-xs font-semibold px-2 py-0.5 rounded-full;
+    background-color: hsl(var(--primary) / 0.1);
+    color: hsl(var(--primary));
+  }
+  
+  /* ND Badge */
+  .nd-badge {
+    @apply text-xs font-medium px-2 py-0.5 rounded bg-muted text-muted-foreground;
+  }
+  
+  /* Icon container */
+  .icon-container {
+    @apply w-8 h-8 rounded-lg flex items-center justify-center;
+    background-color: hsl(var(--primary) / 0.1);
+    color: hsl(var(--primary));
+  }
+}
+
+@layer utilities {
+  /* Print styles for A4 export */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    
+    .document-a4 {
+      box-shadow: none;
+      margin: 0;
+      padding: 15mm;
+    }
+  }
+  
+  /* Smooth number transitions */
+  .transition-numbers {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
