@@ -7,14 +7,18 @@ import { calculateBulletin } from '@/lib/calculationEngine';
 import { exampleScenario1 } from '@/lib/defaultData';
 import type { SimulatorInputs } from '@/lib/types';
 import { toast } from 'sonner';
-import { AlertCircle, Info, PanelLeftClose, PanelLeft, Download } from 'lucide-react';
+import { PanelLeftClose, PanelLeft, Download, ChevronUp, ChevronDown, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const [inputs, setInputs] = useState<SimulatorInputs>(exampleScenario1);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [mobileFormOpen, setMobileFormOpen] = useState(false);
   const bulletinRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
   
   // Calculate view model
   const viewModel = useMemo(() => calculateBulletin(inputs), [inputs]);
@@ -75,6 +79,59 @@ const Index = () => {
     }
   }, [inputs.salarie.moisAffiche]);
   
+  // Mobile layout
+  if (isMobile) {
+    return (
+      <>
+        <Helmet>
+          <title>Simulateur de Relevé de Contribution | France</title>
+          <meta name="description" content="Simulez votre relevé de contribution mensuel et visualisez la répartition de la valeur produite." />
+        </Helmet>
+        
+        <div className="min-h-screen bg-background flex flex-col">
+          {/* Mobile Header */}
+          <header className="sticky top-0 z-20 flex-shrink-0 p-3 flex justify-between items-center border-b bg-background/95 backdrop-blur-sm">
+            <h1 className="text-sm font-semibold text-primary truncate">Relevé de contribution</h1>
+            <div className="flex gap-2">
+              <Sheet open={mobileFormOpen} onOpenChange={setMobileFormOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Settings className="w-4 h-4 mr-1" />
+                    Paramètres
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="bottom" className="h-[85vh] overflow-hidden p-0">
+                  <SheetHeader className="p-4 border-b">
+                    <SheetTitle>Paramètres du simulateur</SheetTitle>
+                  </SheetHeader>
+                  <div className="h-[calc(85vh-60px)] overflow-y-auto">
+                    <SimulatorForm 
+                      inputs={inputs} 
+                      onChange={setInputs}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
+              <Button onClick={handleExport} size="sm">
+                <Download className="w-4 h-4" />
+              </Button>
+            </div>
+          </header>
+          
+          {/* Scrollable content */}
+          <main className="flex-1 overflow-x-auto overflow-y-auto p-4 bg-muted/30">
+            <div className="min-w-fit">
+              <div ref={bulletinRef} data-export-root="true" className="animate-fade-in">
+                <BulletinA4 viewModel={viewModel} />
+              </div>
+            </div>
+          </main>
+        </div>
+      </>
+    );
+  }
+  
+  // Desktop layout
   return (
     <>
       <Helmet>
@@ -129,8 +186,6 @@ const Index = () => {
           
           {/* Scrollable content area */}
           <div className="flex-1 overflow-y-auto p-8">
-          {/* Diagnostics removed as per user request */}
-            
             {/* A4 Bulletin Preview */}
             <div className="flex justify-center">
               <div ref={bulletinRef} data-export-root="true" className="animate-fade-in">
