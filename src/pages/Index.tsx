@@ -20,33 +20,58 @@ const Index = () => {
   const viewModel = useMemo(() => calculateBulletin(inputs), [inputs]);
   
   const handleExport = useCallback(async () => {
-    if (!bulletinRef.current) return;
-    
+    const el = bulletinRef.current;
+    if (!el) return;
+
+    // Freeze animations/transitions + force opaque background to avoid washed-out renders.
+    const originalBg = el.style.backgroundColor;
+    el.classList.add('export-freeze');
+    el.style.backgroundColor = '#ffffff';
+
     try {
-      toast.info('Génération de l\'export en cours...');
-      
-      // Temporarily set explicit white background for export
-      const originalBg = bulletinRef.current.style.backgroundColor;
-      bulletinRef.current.style.backgroundColor = '#ffffff';
-      
-      const canvas = await html2canvas(bulletinRef.current, {
+      toast.info("Génération de l'export en cours...");
+
+      // Ensure the styles are applied before snapshotting.
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+
+      const canvas = await html2canvas(el, {
         scale: 2,
         useCORS: true,
-        backgroundColor: null, // Use element's own background
+        backgroundColor: '#ffffff',
+        onclone: (clonedDoc) => {
+          clonedDoc.documentElement.style.backgroundColor = '#ffffff';
+          clonedDoc.body.style.backgroundColor = '#ffffff';
+
+          const clonedRoot = clonedDoc.querySelector('[data-export-root="true"]') as HTMLElement | null;
+          if (clonedRoot) {
+            clonedRoot.classList.add('export-freeze');
+            clonedRoot.style.backgroundColor = '#ffffff';
+            clonedRoot.style.opacity = '1';
+            clonedRoot.style.filter = 'none';
+            clonedRoot.style.transform = 'none';
+          }
+
+          const clonedA4 = clonedDoc.querySelector('[data-bulletin-a4="true"]') as HTMLElement | null;
+          if (clonedA4) {
+            clonedA4.style.backgroundColor = '#ffffff';
+            clonedA4.style.opacity = '1';
+            clonedA4.style.filter = 'none';
+          }
+        },
       });
-      
-      // Restore original background
-      bulletinRef.current.style.backgroundColor = originalBg;
-      
+
       const link = document.createElement('a');
       link.download = `releve-contribution-${inputs.salarie.moisAffiche.replace(/\s/g, '-')}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-      
+
       toast.success('Export téléchargé !');
     } catch (error) {
-      toast.error('Erreur lors de l\'export');
+      toast.error("Erreur lors de l'export");
       console.error(error);
+    } finally {
+      el.classList.remove('export-freeze');
+      el.style.backgroundColor = originalBg;
     }
   }, [inputs.salarie.moisAffiche]);
   
@@ -108,7 +133,7 @@ const Index = () => {
             
             {/* A4 Bulletin Preview */}
             <div className="flex justify-center">
-              <div ref={bulletinRef} className="animate-fade-in">
+              <div ref={bulletinRef} data-export-root="true" className="animate-fade-in">
                 <BulletinA4 viewModel={viewModel} />
               </div>
             </div>
