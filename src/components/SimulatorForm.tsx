@@ -41,6 +41,7 @@ const defaultVat = {
 
 export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
   const [mode, setMode] = useState<'simple' | 'detailed'>(inputs.mode);
+  const [salarieAutoMode, setSalarieAutoMode] = useState(false);
   
   // Ensure automation fields exist (handles migration from old data structure)
   const automation = inputs.sociale.automation ?? defaultAutomation;
@@ -290,80 +291,93 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
       <section className="form-section">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-sm text-primary">Informations salarié</h3>
-          <Button
+          <button
             type="button"
-            variant="outline"
-            size="sm"
-            onClick={generateRandomSalarie}
-            className="text-xs"
+            onClick={() => {
+              if (!salarieAutoMode) {
+                generateRandomSalarie();
+              }
+              setSalarieAutoMode(!salarieAutoMode);
+            }}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+              salarieAutoMode 
+                ? 'bg-primary/10 text-primary' 
+                : 'bg-muted text-muted-foreground'
+            }`}
           >
-            <Zap className="w-3 h-3 mr-1" />
-            Auto
-          </Button>
+            {salarieAutoMode ? <Zap className="w-3 h-3" /> : <PenLine className="w-3 h-3" />}
+            {salarieAutoMode ? 'Auto' : 'Manuel'}
+          </button>
         </div>
         
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="nom">Nom</Label>
-            <Input
-              id="nom"
-              value={inputs.salarie.nom}
-              onChange={(e) => updateSalarie('nom', e.target.value)}
-              placeholder="Ex: Jean Dupont"
-            />
+        {salarieAutoMode ? (
+          <p className="text-xs text-muted-foreground">
+            Informations générées automatiquement
+          </p>
+        ) : (
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="nom">Nom</Label>
+              <Input
+                id="nom"
+                value={inputs.salarie.nom}
+                onChange={(e) => updateSalarie('nom', e.target.value)}
+                placeholder="Ex: Jean Dupont"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="poste">Poste</Label>
+              <Input
+                id="poste"
+                value={inputs.salarie.poste}
+                onChange={(e) => updateSalarie('poste', e.target.value)}
+                placeholder="Ex: Développeur"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="statut">Statut / Convention</Label>
+              <Input
+                id="statut"
+                value={inputs.salarie.statut}
+                onChange={(e) => updateSalarie('statut', e.target.value)}
+                placeholder="Ex: Cadre - Syntec"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="anciennete">Ancienneté</Label>
+              <Input
+                id="anciennete"
+                value={inputs.salarie.anciennete}
+                onChange={(e) => updateSalarie('anciennete', e.target.value)}
+                placeholder="Ex: 2 ans"
+              />
+            </div>
+            
+            <div className="col-span-2">
+              <Label htmlFor="adresse">Adresse</Label>
+              <Textarea
+                id="adresse"
+                value={inputs.salarie.adresse}
+                onChange={(e) => updateSalarie('adresse', e.target.value)}
+                placeholder="Ex: 12 rue de Paris&#10;75001 Paris"
+                rows={2}
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="mois">Période affichée</Label>
+              <Input
+                id="mois"
+                value={inputs.salarie.moisAffiche}
+                onChange={(e) => updateSalarie('moisAffiche', e.target.value)}
+                placeholder="Ex: Décembre 2025"
+              />
+            </div>
           </div>
-          
-          <div>
-            <Label htmlFor="poste">Poste</Label>
-            <Input
-              id="poste"
-              value={inputs.salarie.poste}
-              onChange={(e) => updateSalarie('poste', e.target.value)}
-              placeholder="Ex: Développeur"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="statut">Statut / Convention</Label>
-            <Input
-              id="statut"
-              value={inputs.salarie.statut}
-              onChange={(e) => updateSalarie('statut', e.target.value)}
-              placeholder="Ex: Cadre - Syntec"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="anciennete">Ancienneté</Label>
-            <Input
-              id="anciennete"
-              value={inputs.salarie.anciennete}
-              onChange={(e) => updateSalarie('anciennete', e.target.value)}
-              placeholder="Ex: 2 ans"
-            />
-          </div>
-          
-          <div className="col-span-2">
-            <Label htmlFor="adresse">Adresse</Label>
-            <Textarea
-              id="adresse"
-              value={inputs.salarie.adresse}
-              onChange={(e) => updateSalarie('adresse', e.target.value)}
-              placeholder="Ex: 12 rue de Paris&#10;75001 Paris"
-              rows={2}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="mois">Période affichée</Label>
-            <Input
-              id="mois"
-              value={inputs.salarie.moisAffiche}
-              onChange={(e) => updateSalarie('moisAffiche', e.target.value)}
-              placeholder="Ex: Décembre 2025"
-            />
-          </div>
-        </div>
+        )}
       </section>
       
       {/* Base Parameters */}
