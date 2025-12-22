@@ -1,0 +1,330 @@
+[
+  {
+    "scenarioId": "S1_SaaS_Startup_10p",
+    "label": "Startup SaaS (B2B) - petite équipe, peu d'achats, TVA simple",
+    "settings": {
+      "year": 2025,
+      "periodDate": "2025-12-01",
+      "divisorMode": "HEADCOUNT",
+      "headcount": 10
+    },
+    "company": {
+      "name": "CloudNest",
+      "sector": "SaaS B2B",
+      "caAnnualHT": 1200000,
+      "taxableProfitAnnual": 90000,
+      "isReducedRateEnabled": true,
+      "accidentAtMpRateDefault": 0.0125,
+      "pnlAnnual": {
+        "organisation": {
+          "rentAndUtilities": 36000,
+          "softwareAndTools": 72000,
+          "hostingInfra": 96000,
+          "marketingSales": 180000,
+          "insuranceFees": 18000,
+          "subcontracting": 60000,
+          "materialsPurchases": 0
+        },
+        "investment": {
+          "capexEquipment": 30000,
+          "training": 12000
+        },
+        "capital": {
+          "dividends": 0,
+          "interestCapital": 0
+        },
+        "social": {
+          "citIS": "AUTO",
+          "vatNet": "AUTO"
+        }
+      },
+      "vat": {
+        "sales": [{ "rate": 0.2, "baseHTAnnual": 1200000 }],
+        "purchases": [{ "rate": 0.2, "baseHTAnnual": 250000 }]
+      }
+    },
+    "employee": {
+      "jobTitle": "Product Designer",
+      "isCadre": true,
+      "grossMonthly": 4300,
+      "pasRate": 0.07,
+      "irMonthlyManual": null,
+      "primes": [{ "label": "Prime annuelle (mensualisée)", "amount": 150 }],
+      "avantages": [{ "label": "Titres-resto (valeur)", "amount": 120 }],
+      "accidentAtMpRate": 0.0125
+    }
+  },
+  {
+    "scenarioId": "S2_PME_Industrie_60p_Matieres",
+    "label": "PME industrielle - achats de matières élevés, FNAL ≥50, IS plus important",
+    "settings": {
+      "year": 2025,
+      "periodDate": "2025-12-01",
+      "divisorMode": "HEADCOUNT",
+      "headcount": 60
+    },
+    "company": {
+      "name": "AtelierMeca",
+      "sector": "Industrie / fabrication",
+      "caAnnualHT": 8200000,
+      "taxableProfitAnnual": 520000,
+      "isReducedRateEnabled": false,
+      "accidentAtMpRateDefault": 0.025,
+      "pnlAnnual": {
+        "organisation": {
+          "materialsPurchases": 3100000,
+          "subcontracting": 420000,
+          "energy": 210000,
+          "rentAndUtilities": 120000,
+          "maintenance": 180000,
+          "logistics": 260000,
+          "insuranceFees": 65000
+        },
+        "investment": {
+          "capexEquipment": 400000,
+          "training": 30000
+        },
+        "capital": {
+          "interestDebt": 110000,
+          "interestCapital": 0,
+          "dividends": 180000
+        },
+        "social": {
+          "citIS": "AUTO",
+          "vatNet": "AUTO"
+        }
+      },
+      "vat": {
+        "sales": [{ "rate": 0.2, "baseHTAnnual": 8200000 }],
+        "purchases": [{ "rate": 0.2, "baseHTAnnual": 3600000 }]
+      }
+    },
+    "employee": {
+      "jobTitle": "Technicien de production",
+      "isCadre": false,
+      "grossMonthly": 2400,
+      "pasRate": 0.03,
+      "primes": [{ "label": "Prime équipe", "amount": 80 }],
+      "avantages": [],
+      "accidentAtMpRate": 0.025
+    }
+  },
+  {
+    "scenarioId": "S3_Retail_Store_25p_MultiTVA",
+    "label": "Commerce (retail) - plusieurs taux de TVA + achats marchandises",
+    "settings": {
+      "year": 2025,
+      "periodDate": "2025-12-01",
+      "divisorMode": "HEADCOUNT",
+      "headcount": 25
+    },
+    "company": {
+      "name": "MaisonGourmande",
+      "sector": "Retail alimentaire",
+      "caAnnualHT": 3100000,
+      "taxableProfitAnnual": 120000,
+      "isReducedRateEnabled": true,
+      "accidentAtMpRateDefault": 0.015,
+      "pnlAnnual": {
+        "organisation": {
+          "materialsPurchases": 1650000,
+          "rentAndUtilities": 140000,
+          "staffingAgency": 20000,
+          "marketingSales": 90000,
+          "logistics": 80000,
+          "insuranceFees": 25000
+        },
+        "investment": {
+          "capexEquipment": 45000
+        },
+        "capital": {
+          "interestDebt": 18000,
+          "dividends": 25000
+        },
+        "social": {
+          "citIS": "AUTO",
+          "vatNet": "AUTO"
+        }
+      },
+      "vat": {
+        "sales": [
+          { "rate": 0.055, "baseHTAnnual": 1500000 },
+          { "rate": 0.1, "baseHTAnnual": 900000 },
+          { "rate": 0.2, "baseHTAnnual": 700000 }
+        ],
+        "purchases": [
+          { "rate": 0.055, "baseHTAnnual": 1200000 },
+          { "rate": 0.1, "baseHTAnnual": 250000 },
+          { "rate": 0.2, "baseHTAnnual": 180000 }
+        ]
+      }
+    },
+    "employee": {
+      "jobTitle": "Vendeur / caisse",
+      "isCadre": false,
+      "grossMonthly": 1850,
+      "pasRate": 0.0,
+      "primes": [{ "label": "Prime objectifs", "amount": 60 }],
+      "avantages": [{ "label": "Réduction employé (valeur)", "amount": 30 }],
+      "accidentAtMpRate": 0.015
+    }
+  },
+  {
+    "scenarioId": "S4_Association_12p_TVA_Exoneree",
+    "label": "Association (quasi) non assujettie TVA - IS nul, focus masse salariale",
+    "settings": {
+      "year": 2025,
+      "periodDate": "2025-12-01",
+      "divisorMode": "HEADCOUNT",
+      "headcount": 12
+    },
+    "company": {
+      "name": "ApprendreEnsemble",
+      "sector": "Association / éducation",
+      "caAnnualHT": 480000,
+      "taxableProfitAnnual": 0,
+      "isReducedRateEnabled": false,
+      "accidentAtMpRateDefault": 0.01,
+      "pnlAnnual": {
+        "organisation": {
+          "rentAndUtilities": 24000,
+          "softwareAndTools": 12000,
+          "materialsPurchases": 18000,
+          "subcontracting": 15000,
+          "insuranceFees": 6000
+        },
+        "investment": {
+          "training": 8000
+        },
+        "capital": {
+          "interestDebt": 0,
+          "dividends": 0
+        },
+        "social": {
+          "citIS": "AUTO",
+          "vatNet": "MANUAL",
+          "vatNetAnnualManual": 0
+        }
+      },
+      "vat": {
+        "sales": [],
+        "purchases": []
+      }
+    },
+    "employee": {
+      "jobTitle": "Coordinateur pédagogique",
+      "isCadre": true,
+      "grossMonthly": 2900,
+      "pasRate": 0.05,
+      "primes": [],
+      "avantages": [{ "label": "Transports (participation)", "amount": 45 }],
+      "accidentAtMpRate": 0.01
+    }
+  },
+  {
+    "scenarioId": "S5_GrandGroupe_1500p_HautSalaire_Overflow",
+    "label": "Grand groupe - valeur produite faible par tête, salaire élevé (cas overflow >100%)",
+    "settings": {
+      "year": 2025,
+      "periodDate": "2025-12-01",
+      "divisorMode": "HEADCOUNT",
+      "headcount": 1500
+    },
+    "company": {
+      "name": "MegaServices",
+      "sector": "Services (marge faible)",
+      "caAnnualHT": 95000000,
+      "taxableProfitAnnual": 1200000,
+      "isReducedRateEnabled": false,
+      "accidentAtMpRateDefault": 0.012,
+      "pnlAnnual": {
+        "organisation": {
+          "subcontracting": 14000000,
+          "rentAndUtilities": 2200000,
+          "softwareAndTools": 3500000,
+          "marketingSales": 1800000,
+          "insuranceFees": 600000,
+          "materialsPurchases": 0
+        },
+        "investment": {
+          "capexEquipment": 900000
+        },
+        "capital": {
+          "interestDebt": 750000,
+          "dividends": 1000000
+        },
+        "social": {
+          "citIS": "AUTO",
+          "vatNet": "AUTO"
+        }
+      },
+      "vat": {
+        "sales": [{ "rate": 0.2, "baseHTAnnual": 95000000 }],
+        "purchases": [{ "rate": 0.2, "baseHTAnnual": 42000000 }]
+      }
+    },
+    "employee": {
+      "jobTitle": "Cadre dirigeant",
+      "isCadre": true,
+      "grossMonthly": 14000,
+      "pasRate": 0.18,
+      "primes": [{ "label": "Bonus (mensualisé)", "amount": 1200 }],
+      "avantages": [{ "label": "Voiture de fonction (valeur)", "amount": 600 }],
+      "accidentAtMpRate": 0.012
+    }
+  },
+  {
+    "scenarioId": "S6_TPE_Artisan_6p_SousTraitance_Dette",
+    "label": "TPE artisanale - faible effectif, FNAL <50, sous-traitance + intérêts de dette",
+    "settings": {
+      "year": 2025,
+      "periodDate": "2025-03-01",
+      "divisorMode": "HEADCOUNT",
+      "headcount": 6
+    },
+    "company": {
+      "name": "BoisEtChaux",
+      "sector": "Artisanat / rénovation",
+      "caAnnualHT": 420000,
+      "taxableProfitAnnual": 18000,
+      "isReducedRateEnabled": true,
+      "accidentAtMpRateDefault": 0.02,
+      "pnlAnnual": {
+        "organisation": {
+          "materialsPurchases": 110000,
+          "subcontracting": 65000,
+          "rentAndUtilities": 12000,
+          "vehicleAndFuel": 24000,
+          "insuranceFees": 8000
+        },
+        "investment": {
+          "capexEquipment": 15000
+        },
+        "capital": {
+          "interestDebt": 9000,
+          "dividends": 0
+        },
+        "social": {
+          "citIS": "AUTO",
+          "vatNet": "AUTO"
+        }
+      },
+      "vat": {
+        "sales": [
+          { "rate": 0.1, "baseHTAnnual": 260000 },
+          { "rate": 0.2, "baseHTAnnual": 160000 }
+        ],
+        "purchases": [{ "rate": 0.2, "baseHTAnnual": 120000 }]
+      }
+    },
+    "employee": {
+      "jobTitle": "Compagnon",
+      "isCadre": false,
+      "grossMonthly": 2150,
+      "pasRate": 0.02,
+      "primes": [{ "label": "Panier chantier", "amount": 70 }],
+      "avantages": [],
+      "accidentAtMpRate": 0.02
+    }
+  }
+]
