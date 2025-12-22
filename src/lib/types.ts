@@ -144,6 +144,12 @@ export interface LineValue {
   isPartial?: boolean;
   formulaText?: string;
   sourceFields?: string[];
+  // IR-specific fields
+  irDetails?: {
+    netImposable: number | null;
+    pasRate: number | null;
+    source: 'manual' | 'custom_rate' | 'default_bracket';
+  };
 }
 
 export interface PartTotal {

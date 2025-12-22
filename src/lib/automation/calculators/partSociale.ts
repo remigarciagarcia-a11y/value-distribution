@@ -487,6 +487,11 @@ export function toPartSocialeVM(
     rate?: number | null;
     rateEmployee?: number | null;
     rateEmployer?: number | null;
+    irDetails?: {
+      netImposable: number | null;
+      pasRate: number | null;
+      source: 'manual' | 'custom_rate' | 'default_bracket';
+    };
   }[];
   total: { total: number | null; pct: number | null; isPartial: boolean };
 } {
@@ -505,6 +510,11 @@ export function toPartSocialeVM(
     rate?: number | null;
     rateEmployee?: number | null;
     rateEmployer?: number | null;
+    irDetails?: {
+      netImposable: number | null;
+      pasRate: number | null;
+      source: 'manual' | 'custom_rate' | 'default_bracket';
+    };
   }[] = [];
 
   // Add contribution categories with rates
@@ -519,12 +529,23 @@ export function toPartSocialeVM(
     });
   }
 
-  // Add IR (no rate - it's based on PAS)
+  // Add IR with details (taux PAS, source, net imposable)
+  const irResult = result.ir as { 
+    value: number | null; 
+    netImposable?: number | null; 
+    pasRate?: number | null; 
+    irSource?: string; 
+  };
   lines.push({
     label: 'Impôt sur le revenu',
     value: result.ir.value,
     pct: calculatePct(result.ir.value),
-    rate: null,
+    rate: irResult.pasRate ?? null,
+    irDetails: {
+      netImposable: irResult.netImposable ?? null,
+      pasRate: irResult.pasRate ?? null,
+      source: (irResult.irSource as 'manual' | 'custom_rate' | 'default_bracket') ?? 'manual',
+    },
   });
 
   // Add IS (monthly per person) - show 25% or 15% rate

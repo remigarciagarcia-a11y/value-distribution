@@ -12,27 +12,51 @@ function formatRate(rate: number | null | undefined): string {
   return `${(rate * 100).toFixed(2)}%`;
 }
 
+function formatIRSource(source: 'manual' | 'custom_rate' | 'default_bracket'): string {
+  switch (source) {
+    case 'manual': return 'manuel';
+    case 'custom_rate': return 'taux perso.';
+    case 'default_bracket': return 'barème';
+    default: return '';
+  }
+}
+
 export function SectionLine({ line, showPct = false, showRate = false }: SectionLineProps) {
   const hasRate = showRate && (line.rate !== null && line.rate !== undefined);
   const hasDetailedRates = showRate && (line.rateEmployee !== null && line.rateEmployee !== undefined);
+  const hasIRDetails = line.irDetails !== undefined;
   
   return (
-    <div className="flex justify-between items-baseline py-0.5 gap-2">
-      <span className="text-sm text-foreground/80 flex-1">{line.label}</span>
-      {hasRate && (
-        <span className="text-xs text-muted-foreground tabular-nums min-w-[60px] text-right">
-          {hasDetailedRates ? (
-            <span title={`Salarié: ${formatRate(line.rateEmployee)} | Employeur: ${formatRate(line.rateEmployer)}`}>
-              {formatRate(line.rate)}
-            </span>
-          ) : (
-            formatRate(line.rate)
-          )}
+    <div className="flex flex-col">
+      <div className="flex justify-between items-baseline py-0.5 gap-2">
+        <span className="text-sm text-foreground/80 flex-1">{line.label}</span>
+        {hasRate && (
+          <span className="text-xs text-muted-foreground tabular-nums min-w-[60px] text-right">
+            {hasDetailedRates ? (
+              <span title={`Salarié: ${formatRate(line.rateEmployee)} | Employeur: ${formatRate(line.rateEmployer)}`}>
+                {formatRate(line.rate)}
+              </span>
+            ) : (
+              formatRate(line.rate)
+            )}
+          </span>
+        )}
+        <span className="text-sm font-medium tabular-nums min-w-[80px] text-right">
+          {formatND(line.value)}
         </span>
+      </div>
+      {/* IR Details row */}
+      {hasIRDetails && line.irDetails && line.value !== null && (
+        <div className="flex justify-between items-center text-xs text-muted-foreground pl-2 pb-1 border-l-2 border-primary/20 ml-1">
+          <span className="flex gap-2">
+            <span>Net imposable: {line.irDetails.netImposable !== null ? formatND(line.irDetails.netImposable) : 'ND'}</span>
+            <span>•</span>
+            <span>Taux: {line.irDetails.pasRate !== null ? formatRate(line.irDetails.pasRate) : 'ND'}</span>
+            <span>•</span>
+            <span className="italic">{formatIRSource(line.irDetails.source)}</span>
+          </span>
+        </div>
       )}
-      <span className="text-sm font-medium tabular-nums min-w-[80px] text-right">
-        {formatND(line.value)}
-      </span>
     </div>
   );
 }
