@@ -1,7 +1,7 @@
 [
   {
     "id": "preset_saas_startup_10",
-    "name": "Startup SaaS (10 salariés) — TVA simple, IS réduit, structure légère",
+    "name": "Startup SaaS — 10 sal.",
     "description": "Petite boîte SaaS, outils/infra importants, IS réduit activé, TVA 20% simple.",
     "prefill": {
       "base.ponderation": "HEADCOUNT",
@@ -37,7 +37,7 @@
   },
   {
     "id": "preset_industrie_pme_60",
-    "name": "PME industrielle (60 salariés) — FNAL ≥50, IS normal, grosse structure",
+    "name": "PME industrielle — 60 sal.",
     "description": "PME de production, plus de management/support, investissements et R&D.",
     "prefill": {
       "base.ponderation": "HEADCOUNT",
@@ -73,7 +73,7 @@
   },
   {
     "id": "preset_retail_25_multitva",
-    "name": "Commerce retail (25 salariés) — TVA multi-taux, IS réduit",
+    "name": "Commerce retail — 25 sal.",
     "description": "Retail alimentaire avec ventes à 5,5% / 10% / 20% et achats mixtes.",
     "prefill": {
       "base.ponderation": "FTE",
@@ -113,7 +113,7 @@
   },
   {
     "id": "preset_association_12_tva0",
-    "name": "Association (12 salariés) — TVA=0 manuel, IS=0",
+    "name": "Association — 12 sal.",
     "description": "Structure type association/éducation : TVA non gérée (0), bénéfice imposable nul.",
     "prefill": {
       "base.ponderation": "HEADCOUNT",
@@ -145,7 +145,7 @@
   },
   {
     "id": "preset_grand_groupe_1500",
-    "name": "Grand groupe (1500 salariés) — TVA massive, IS normal, structure lourde",
+    "name": "Grand groupe — 1500 sal.",
     "description": "Groupe de services : gros volumes TVA, beaucoup de fonctions support/IT.",
     "prefill": {
       "base.ponderation": "HEADCOUNT",
@@ -181,7 +181,7 @@
   },
   {
     "id": "preset_artisan_tpe_6",
-    "name": "TPE artisanale (6 salariés) — TVA mixte, IS réduit, charges modestes",
+    "name": "TPE artisanale — 6 sal.",
     "description": "Artisanat/rénovation : petites fonctions support, TVA 10%+20%, réserves faibles.",
     "prefill": {
       "base.ponderation": "FTE",
