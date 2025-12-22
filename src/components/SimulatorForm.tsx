@@ -83,13 +83,13 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
     });
   };
   
-  const updateSocialeEmployee = (field: keyof SimulatorInputs['sociale']['employee'], value: unknown) => {
+  const updateSocialeEmployee = (updates: Partial<SimulatorInputs['sociale']['employee']>) => {
     const currentEmployee = inputs.sociale.employee ?? defaultEmployee;
     onChange({
       ...inputs,
       sociale: {
         ...inputs.sociale,
-        employee: { ...currentEmployee, [field]: value },
+        employee: { ...currentEmployee, ...updates },
       },
     });
   };
@@ -525,8 +525,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                 value={employee.grossMonthly ?? employee.brutMonthly ?? ''}
                 onChange={(e) => {
                   const val = parseNumber(e.target.value);
-                  updateSocialeEmployee('grossMonthly', val);
-                  updateSocialeEmployee('brutMonthly', val);
+                  updateSocialeEmployee({ grossMonthly: val, brutMonthly: val });
                 }}
                 className="font-medium"
               />
@@ -539,7 +538,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                     type="radio"
                     name="employeeStatus"
                     checked={employee.status === 'cadre'}
-                    onChange={() => updateSocialeEmployee('status', 'cadre' as EmployeeStatusType)}
+                    onChange={() => updateSocialeEmployee({ status: 'cadre' as EmployeeStatusType })}
                     className="accent-primary"
                   />
                   Cadre
@@ -549,7 +548,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                     type="radio"
                     name="employeeStatus"
                     checked={employee.status === 'non_cadre'}
-                    onChange={() => updateSocialeEmployee('status', 'non_cadre' as EmployeeStatusType)}
+                    onChange={() => updateSocialeEmployee({ status: 'non_cadre' as EmployeeStatusType })}
                     className="accent-primary"
                   />
                   Non-cadre
@@ -640,7 +639,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                 value={employee.pasRate !== null ? (employee.pasRate * 100).toString() : ''}
                 onChange={(e) => {
                   const val = parseNumber(e.target.value);
-                  updateSocialeEmployee('pasRate', val !== null ? val / 100 : null);
+                  updateSocialeEmployee({ pasRate: val !== null ? val / 100 : null });
                 }}
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -656,7 +655,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                 value={employee.irMonthlyManual ?? inputs.sociale.impotRevenu ?? ''}
                 onChange={(e) => {
                   const val = parseNumber(e.target.value);
-                  updateSocialeEmployee('irMonthlyManual', val);
+                  updateSocialeEmployee({ irMonthlyManual: val });
                   updateSociale('impotRevenu', val);
                 }}
               />
