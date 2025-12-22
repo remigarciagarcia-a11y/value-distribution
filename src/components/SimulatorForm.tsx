@@ -290,6 +290,9 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
           </Button>
         ))}
         </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Les scénarios pré-remplissent les paramètres avec des valeurs types selon la taille et le secteur d'activité. Tous les champs restent modifiables.
+        </p>
       </div>
       
       {/* Salarié - MOVED TO FIRST */}
