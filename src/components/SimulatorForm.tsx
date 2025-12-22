@@ -13,8 +13,36 @@ interface SimulatorFormProps {
   onChange: (inputs: SimulatorInputs) => void;
 }
 
+// Default values for automation fields (handles migration from old data)
+const defaultAutomation = {
+  cotisationsMode: { mode: 'manual' as AutoModeType, manualValue: null },
+  isMode: { mode: 'manual' as AutoModeType, manualValue: null },
+  vatMode: { mode: 'manual' as AutoModeType, manualValue: null },
+};
+
+const defaultEmployee = {
+  brutMonthly: null,
+  status: 'cadre' as EmployeeStatusType,
+};
+
+const defaultCompany = {
+  taxableProfitAnnual: null,
+  isReducedRateEnabled: false,
+};
+
+const defaultVat = {
+  sales: [] as VATLineInput[],
+  purchases: [] as VATLineInput[],
+};
+
 export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
   const [mode, setMode] = useState<'simple' | 'detailed'>(inputs.mode);
+  
+  // Ensure automation fields exist (handles migration from old data structure)
+  const automation = inputs.sociale.automation ?? defaultAutomation;
+  const employee = inputs.sociale.employee ?? defaultEmployee;
+  const company = inputs.sociale.company ?? defaultCompany;
+  const vat = inputs.sociale.vat ?? defaultVat;
   
   const updateBase = (field: keyof SimulatorInputs['base'], value: string | number | null) => {
     onChange({
@@ -137,22 +165,22 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
       baseHTAnnual: null,
     };
     updateSociale('vat', {
-      ...inputs.sociale.vat,
-      [type]: [...inputs.sociale.vat[type], newLine],
+      ...vat,
+      [type]: [...vat[type], newLine],
     });
   };
   
   const removeVATLine = (type: 'sales' | 'purchases', id: string) => {
     updateSociale('vat', {
-      ...inputs.sociale.vat,
-      [type]: inputs.sociale.vat[type].filter(l => l.id !== id),
+      ...vat,
+      [type]: vat[type].filter(l => l.id !== id),
     });
   };
   
   const updateVATLine = (type: 'sales' | 'purchases', id: string, field: 'rate' | 'baseHTAnnual', value: number | null) => {
     updateSociale('vat', {
-      ...inputs.sociale.vat,
-      [type]: inputs.sociale.vat[type].map(l =>
+      ...vat,
+      [type]: vat[type].map(l =>
         l.id === id ? { ...l, [field]: value } : l
       ),
     });
@@ -482,12 +510,12 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
         {/* Cotisations sociales */}
         <div className="mb-6 p-4 bg-muted/30 rounded-lg">
           <ModeToggle
-            mode={inputs.sociale.automation.cotisationsMode.mode}
+            mode={automation.cotisationsMode.mode}
             onToggle={(m) => updateAutomationMode('cotisationsMode', m)}
             label="Cotisations sociales"
           />
           
-          {inputs.sociale.automation.cotisationsMode.mode === 'auto' ? (
+          {automation.cotisationsMode.mode === 'auto' ? (
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="brutMonthly">Salaire brut mensuel (€)</Label>
@@ -495,7 +523,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                   id="brutMonthly"
                   type="text"
                   placeholder="Ex: 4 500"
-                  value={inputs.sociale.employee.brutMonthly ?? ''}
+                  value={employee.brutMonthly ?? ''}
                   onChange={(e) => updateSocialeEmployee('brutMonthly', parseNumber(e.target.value))}
                 />
               </div>
@@ -506,7 +534,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                     <input
                       type="radio"
                       name="employeeStatus"
-                      checked={inputs.sociale.employee.status === 'cadre'}
+                      checked={employee.status === 'cadre'}
                       onChange={() => updateSocialeEmployee('status', 'cadre' as EmployeeStatusType)}
                       className="accent-primary"
                     />
@@ -516,7 +544,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                     <input
                       type="radio"
                       name="employeeStatus"
-                      checked={inputs.sociale.employee.status === 'non_cadre'}
+                      checked={employee.status === 'non_cadre'}
                       onChange={() => updateSocialeEmployee('status', 'non_cadre' as EmployeeStatusType)}
                       className="accent-primary"
                     />
@@ -593,12 +621,12 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
         {/* Impôt sur les sociétés */}
         <div className="mb-6 p-4 bg-muted/30 rounded-lg">
           <ModeToggle
-            mode={inputs.sociale.automation.isMode.mode}
+            mode={automation.isMode.mode}
             onToggle={(m) => updateAutomationMode('isMode', m)}
             label="Impôt sur les sociétés (IS)"
           />
           
-          {inputs.sociale.automation.isMode.mode === 'auto' ? (
+          {automation.isMode.mode === 'auto' ? (
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="taxableProfit">Bénéfice imposable annuel (€)</Label>
@@ -606,14 +634,14 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                   id="taxableProfit"
                   type="text"
                   placeholder="Ex: 150 000"
-                  value={inputs.sociale.company.taxableProfitAnnual ?? ''}
+                  value={company.taxableProfitAnnual ?? ''}
                   onChange={(e) => updateSocialeCompany('taxableProfitAnnual', parseNumber(e.target.value))}
                 />
               </div>
               <div className="flex items-center gap-2 mt-6">
                 <Switch
                   id="reducedRate"
-                  checked={inputs.sociale.company.isReducedRateEnabled}
+                  checked={company.isReducedRateEnabled}
                   onCheckedChange={(checked) => updateSocialeCompany('isReducedRateEnabled', checked)}
                 />
                 <Label htmlFor="reducedRate" className="text-sm">Taux réduit PME (15%)</Label>
@@ -635,12 +663,12 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
         {/* TVA */}
         <div className="p-4 bg-muted/30 rounded-lg">
           <ModeToggle
-            mode={inputs.sociale.automation.vatMode.mode}
+            mode={automation.vatMode.mode}
             onToggle={(m) => updateAutomationMode('vatMode', m)}
             label="TVA nette reversée"
           />
           
-          {inputs.sociale.automation.vatMode.mode === 'auto' ? (
+          {automation.vatMode.mode === 'auto' ? (
             <div className="space-y-4">
               {/* Ventes */}
               <div>
@@ -651,7 +679,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                     Ajouter
                   </Button>
                 </div>
-                {inputs.sociale.vat.sales.map(line => (
+                {vat.sales.map(line => (
                   <div key={line.id} className="flex gap-2 mb-2">
                     <select
                       value={line.rate}
@@ -675,7 +703,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                     </Button>
                   </div>
                 ))}
-                {inputs.sociale.vat.sales.length === 0 && (
+                {vat.sales.length === 0 && (
                   <p className="text-xs text-muted-foreground italic">Aucune ligne de vente</p>
                 )}
               </div>
@@ -689,7 +717,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                     Ajouter
                   </Button>
                 </div>
-                {inputs.sociale.vat.purchases.map(line => (
+                {vat.purchases.map(line => (
                   <div key={line.id} className="flex gap-2 mb-2">
                     <select
                       value={line.rate}
@@ -713,7 +741,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                     </Button>
                   </div>
                 ))}
-                {inputs.sociale.vat.purchases.length === 0 && (
+                {vat.purchases.length === 0 && (
                   <p className="text-xs text-muted-foreground italic">Aucune ligne d'achat</p>
                 )}
               </div>
@@ -725,14 +753,14 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                 id="vatManual"
                 type="text"
                 placeholder="TVA collectée - TVA déductible"
-                value={inputs.sociale.automation.vatMode.manualValue ?? ''}
+                value={automation.vatMode.manualValue ?? ''}
                 onChange={(e) => onChange({
                   ...inputs,
                   sociale: {
                     ...inputs.sociale,
                     automation: {
-                      ...inputs.sociale.automation,
-                      vatMode: { ...inputs.sociale.automation.vatMode, manualValue: parseNumber(e.target.value) },
+                      ...automation,
+                      vatMode: { ...automation.vatMode, manualValue: parseNumber(e.target.value) },
                     },
                   },
                 })}
