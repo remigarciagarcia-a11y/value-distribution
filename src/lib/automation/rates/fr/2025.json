@@ -1,0 +1,204 @@
+{
+  "meta": {
+    "country": "FR",
+    "year": 2025,
+    "currency": "EUR",
+    "notes": [
+      "Barèmes génériques secteur privé (hors cas spéciaux). Certains taux sont variables (AT/MP, versement mobilité, mutuelle/prévoyance...).",
+      "Les seuils 'effectif >= 50' ont des règles de franchissement sur 5 ans dans la vraie vie : en V1, traiter via un toggle 'fnalRateMode'."
+    ]
+  },
+  "constants": {
+    "PMSS": 3925.0,
+    "PASS": 47100.0,
+    "SMIC_HOURLY": 11.88,
+    "SMIC_MONTHLY_35H": 1801.80,
+    "CHOMAGE_CAP_MULTIPLIER_PMSS": 4,
+    "CSG_ABATTEMENT_RATE": 0.0175,
+    "CSG_ABATTEMENT_CAP_MULTIPLIER_PMSS": 4
+  },
+  "tax_rates": {
+    "vat_rates": [0.20, 0.10, 0.055, 0.021],
+    "cit_is": {
+      "normal_rate": 0.25,
+      "reduced_rate": 0.15,
+      "reduced_cap_profit": 42500.0,
+      "reduced_conditions": "CA_HT < 10M€ + autres conditions légales (à gérer via toggle en V1)"
+    }
+  },
+  "inputs_required": {
+    "grossMonthly": "number",
+    "companyHeadcount": "number",
+    "isCadre": "boolean",
+    "accidentAtMpRate": "number (ex: 0.0125 pour 1,25%)",
+    "versementMobiliteRate": "number (optionnel)",
+    "applyReductionGenerale": "boolean (optionnel)"
+  },
+  "derived": {
+    "chomageCapMonthly": "CHOMAGE_CAP_MULTIPLIER_PMSS * PMSS",
+    "csgAbatementBase": "min(grossMonthly, CSG_ABATTEMENT_CAP_MULTIPLIER_PMSS * PMSS) * CSG_ABATTEMENT_RATE",
+    "csgAssiette": "grossMonthly - csgAbatementBase",
+    "t1": "min(grossMonthly, PMSS)",
+    "t2": "min(max(grossMonthly - PMSS, 0), 7 * PMSS)"
+  },
+  "contributions": [
+    {
+      "id": "maladie_employer",
+      "label": "Assurance maladie (employeur)",
+      "payer": "employer",
+      "baseExpr": "grossMonthly",
+      "rate": [
+        { "if": "grossMonthly <= 2.25 * SMIC_MONTHLY_35H", "value": 0.07 },
+        { "else": 0.13 }
+      ]
+    },
+    {
+      "id": "allocations_familiales",
+      "label": "Allocations familiales (employeur)",
+      "payer": "employer",
+      "baseExpr": "grossMonthly",
+      "rate": [
+        { "if": "grossMonthly <= 3.3 * SMIC_MONTHLY_35H", "value": 0.0345 },
+        { "else": 0.0525 }
+      ]
+    },
+    {
+      "id": "vieillesse_plafonnee",
+      "label": "Vieillesse plafonnée",
+      "payer": "both",
+      "baseExpr": "t1",
+      "rateEmployee": 0.069,
+      "rateEmployer": 0.0855
+    },
+    {
+      "id": "vieillesse_deplafonnee",
+      "label": "Vieillesse déplafonnée",
+      "payer": "both",
+      "baseExpr": "grossMonthly",
+      "rateEmployee": 0.004,
+      "rateEmployer": 0.0202
+    },
+    {
+      "id": "assurance_chomage",
+      "label": "Assurance chômage (employeur)",
+      "payer": "employer",
+      "baseExpr": "min(grossMonthly, chomageCapMonthly)",
+      "rate": 0.04,
+      "effectiveFrom": "2025-05-01"
+    },
+    {
+      "id": "ags",
+      "label": "AGS (garantie des salaires) (employeur)",
+      "payer": "employer",
+      "baseExpr": "min(grossMonthly, chomageCapMonthly)",
+      "rate": 0.0025
+    },
+    {
+      "id": "fnal",
+      "label": "FNAL (employeur)",
+      "payer": "employer",
+      "baseExpr": [
+        { "if": "companyHeadcount < 50", "expr": "t1" },
+        { "else": "grossMonthly" }
+      ],
+      "rate": [
+        { "if": "companyHeadcount < 50", "value": 0.001 },
+        { "else": 0.005 }
+      ]
+    },
+    {
+      "id": "csa",
+      "label": "Contribution solidarité autonomie (employeur)",
+      "payer": "employer",
+      "baseExpr": "grossMonthly",
+      "rate": 0.003
+    },
+    {
+      "id": "at_mp",
+      "label": "Accidents du travail / MP (employeur) (taux variable)",
+      "payer": "employer",
+      "baseExpr": "grossMonthly",
+      "rateExpr": "accidentAtMpRate"
+    },
+    {
+      "id": "agirc_arrco_t1",
+      "label": "AGIRC-ARRCO T1",
+      "payer": "both",
+      "baseExpr": "t1",
+      "rateEmployee": 0.0315,
+      "rateEmployer": 0.0472
+    },
+    {
+      "id": "agirc_arrco_t2",
+      "label": "AGIRC-ARRCO T2",
+      "payer": "both",
+      "baseExpr": "t2",
+      "rateEmployee": 0.0864,
+      "rateEmployer": 0.1295
+    },
+    {
+      "id": "ceg_t1",
+      "label": "CEG T1",
+      "payer": "both",
+      "baseExpr": "t1",
+      "rateEmployee": 0.0086,
+      "rateEmployer": 0.0129
+    },
+    {
+      "id": "ceg_t2",
+      "label": "CEG T2",
+      "payer": "both",
+      "baseExpr": "t2",
+      "rateEmployee": 0.0108,
+      "rateEmployer": 0.0162
+    },
+    {
+      "id": "cet",
+      "label": "CET (si salaire > PMSS)",
+      "payer": "both",
+      "baseExpr": "t1 + t2",
+      "applyIf": "grossMonthly > PMSS",
+      "rateEmployee": 0.0014,
+      "rateEmployer": 0.0021
+    },
+    {
+      "id": "apec",
+      "label": "APEC (cadres)",
+      "payer": "both",
+      "applyIf": "isCadre == true",
+      "baseExpr": "min(grossMonthly, chomageCapMonthly)",
+      "rateEmployee": 0.00024,
+      "rateEmployer": 0.00036
+    },
+    {
+      "id": "csg",
+      "label": "CSG (salarié) – total",
+      "payer": "employee",
+      "baseExpr": "csgAssiette",
+      "rate": 0.092,
+      "breakdown": {
+        "deductible_ir": 0.068,
+        "non_deductible_ir": 0.024
+      }
+    },
+    {
+      "id": "crds",
+      "label": "CRDS (salarié)",
+      "payer": "employee",
+      "baseExpr": "csgAssiette",
+      "rate": 0.005
+    }
+  ],
+  "reduction_generale": {
+    "enabledByInput": "applyReductionGenerale",
+    "annualFormula": "(T / 0.6) * ((1.6 * SMIC_ANNUAL / REMUN_ANNUAL) - 1)",
+    "T_values_2025": {
+      "lt50": { "jan_to_apr": 0.3194, "may_to_dec": 0.3193 },
+      "ge50": { "jan_to_apr": 0.3234, "may_to_dec": 0.3233 }
+    },
+    "notes": [
+      "Les pages officielles donnent 2 valeurs de T en 2025 (avant/après 1er mai).",
+      "Implémentation V1 conseillée: calcul annualisé simplifié à partir d'un brut mensuel constant."
+    ]
+  }
+}
