@@ -1,7 +1,7 @@
 [
   {
     "scenarioId": "S1_SaaS_Startup_10p",
-    "label": "Startup SaaS (B2B) - petite équipe, peu d'achats, TVA simple",
+    "label": "Startup SaaS (10p)",
     "settings": {
       "year": 2025,
       "periodDate": "2025-12-01",
@@ -56,7 +56,7 @@
   },
   {
     "scenarioId": "S2_PME_Industrie_60p_Matieres",
-    "label": "PME industrielle - achats de matières élevés, FNAL ≥50, IS plus important",
+    "label": "PME Industrie (60p)",
     "settings": {
       "year": 2025,
       "periodDate": "2025-12-01",
@@ -111,7 +111,7 @@
   },
   {
     "scenarioId": "S3_Retail_Store_25p_MultiTVA",
-    "label": "Commerce (retail) - plusieurs taux de TVA + achats marchandises",
+    "label": "Commerce Multi-TVA (25p)",
     "settings": {
       "year": 2025,
       "periodDate": "2025-12-01",
@@ -171,7 +171,7 @@
   },
   {
     "scenarioId": "S4_Association_12p_TVA_Exoneree",
-    "label": "Association (quasi) non assujettie TVA - IS nul, focus masse salariale",
+    "label": "Association (12p)",
     "settings": {
       "year": 2025,
       "periodDate": "2025-12-01",
@@ -223,7 +223,7 @@
   },
   {
     "scenarioId": "S5_GrandGroupe_1500p_HautSalaire_Overflow",
-    "label": "Grand groupe - valeur produite faible par tête, salaire élevé (cas overflow >100%)",
+    "label": "Grand Groupe (1500p)",
     "settings": {
       "year": 2025,
       "periodDate": "2025-12-01",
@@ -275,7 +275,7 @@
   },
   {
     "scenarioId": "S6_TPE_Artisan_6p_SousTraitance_Dette",
-    "label": "TPE artisanale - faible effectif, FNAL <50, sous-traitance + intérêts de dette",
+    "label": "TPE Artisan (6p)",
     "settings": {
       "year": 2025,
       "periodDate": "2025-03-01",
