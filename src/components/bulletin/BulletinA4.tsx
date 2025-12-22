@@ -236,7 +236,7 @@ export function BulletinA4({ viewModel }: BulletinA4Props) {
                     <span className="text-xs text-muted-foreground leading-tight block mb-2">
                       Montant du déficit de la Sécurité Sociale et de la dette de l'État par actif.
                     </span>
-                    <div className="text-right">
+                    <div className="text-center">
                       <span className="font-mono font-bold text-sm text-primary bg-primary/10 px-2 py-1 rounded">
                         {formatCurrencyCompact(deficitDette.montant)}
                       </span>
