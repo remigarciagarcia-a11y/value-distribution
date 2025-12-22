@@ -103,14 +103,14 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
     });
   };
   
-  const updateAutomationMode = (component: 'cotisationsMode' | 'isMode' | 'vatMode', mode: AutoModeType) => {
+  const updateAutomationMode = (component: 'cotisationsMode' | 'irMode' | 'isMode' | 'vatMode', mode: AutoModeType) => {
     onChange({
       ...inputs,
       sociale: {
         ...inputs.sociale,
         automation: {
-          ...inputs.sociale.automation,
-          [component]: { ...inputs.sociale.automation[component], mode },
+          ...automation,
+          [component]: { ...automation[component], mode },
         },
       },
     });
