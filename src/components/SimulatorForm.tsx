@@ -386,6 +386,58 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
       <section className="form-section">
         <h3 className="font-semibold text-sm text-primary mb-4">Informations entreprise</h3>
         
+        {/* Pondération en premier */}
+        <div className="flex items-center gap-4 mb-4">
+          <Label>Pondération :</Label>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="ponderation"
+                checked={inputs.base.ponderation === 'HEADCOUNT'}
+                onChange={() => updateBase('ponderation', 'HEADCOUNT')}
+                className="accent-primary"
+              />
+              Effectif
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="radio"
+                name="ponderation"
+                checked={inputs.base.ponderation === 'FTE'}
+                onChange={() => updateBase('ponderation', 'FTE')}
+                className="accent-primary"
+              />
+              ETP
+            </label>
+          </div>
+        </div>
+        
+        <div className="mb-4">
+          {inputs.base.ponderation === 'HEADCOUNT' ? (
+            <div>
+              <Label htmlFor="effectif">Effectif (têtes)</Label>
+              <Input
+                id="effectif"
+                type="number"
+                value={inputs.base.effectif ?? ''}
+                onChange={(e) => updateBase('effectif', parseNumber(e.target.value))}
+              />
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="etp">ETP</Label>
+              <Input
+                id="etp"
+                type="number"
+                step="0.5"
+                value={inputs.base.etp ?? ''}
+                onChange={(e) => updateBase('etp', parseNumber(e.target.value))}
+              />
+            </div>
+          )}
+        </div>
+        
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label htmlFor="ca">CA annuel HT (€)</Label>
@@ -428,57 +480,6 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
               onChange={(e) => updateCapital('reserves', parseNumber(e.target.value))}
             />
           </div>
-        </div>
-        
-        <div className="mt-4 flex items-center gap-4">
-          <Label>Pondération :</Label>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="ponderation"
-                checked={inputs.base.ponderation === 'HEADCOUNT'}
-                onChange={() => updateBase('ponderation', 'HEADCOUNT')}
-                className="accent-primary"
-              />
-              Effectif
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="ponderation"
-                checked={inputs.base.ponderation === 'FTE'}
-                onChange={() => updateBase('ponderation', 'FTE')}
-                className="accent-primary"
-              />
-              ETP
-            </label>
-          </div>
-        </div>
-        
-        <div className="mt-4">
-          {inputs.base.ponderation === 'HEADCOUNT' ? (
-            <div>
-              <Label htmlFor="effectif">Effectif (têtes)</Label>
-              <Input
-                id="effectif"
-                type="number"
-                value={inputs.base.effectif ?? ''}
-                onChange={(e) => updateBase('effectif', parseNumber(e.target.value))}
-              />
-            </div>
-          ) : (
-            <div>
-              <Label htmlFor="etp">ETP</Label>
-              <Input
-                id="etp"
-                type="number"
-                step="0.5"
-                value={inputs.base.etp ?? ''}
-                onChange={(e) => updateBase('etp', parseNumber(e.target.value))}
-              />
-            </div>
-          )}
         </div>
         
         {/* TVA intégrée */}
