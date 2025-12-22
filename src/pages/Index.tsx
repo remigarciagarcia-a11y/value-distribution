@@ -7,10 +7,13 @@ import { calculateBulletin } from '@/lib/calculationEngine';
 import { exampleScenario1 } from '@/lib/defaultData';
 import type { SimulatorInputs } from '@/lib/types';
 import { toast } from 'sonner';
-import { AlertCircle, Info } from 'lucide-react';
+import { AlertCircle, Info, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 const Index = () => {
   const [inputs, setInputs] = useState<SimulatorInputs>(exampleScenario1);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const bulletinRef = useRef<HTMLDivElement>(null);
   
   // Calculate view model
@@ -49,16 +52,43 @@ const Index = () => {
       
       <div className="min-h-screen bg-background flex">
         {/* Left Panel - Form */}
-        <aside className="w-[420px] border-r bg-secondary/30 flex-shrink-0 h-screen overflow-hidden">
-          <SimulatorForm 
-            inputs={inputs} 
-            onChange={setInputs}
-            onExport={handleExport}
-          />
+        <aside 
+          className={`border-r bg-secondary/30 flex-shrink-0 h-screen overflow-hidden transition-all duration-300 ease-in-out ${
+            sidebarOpen ? 'w-[420px]' : 'w-0'
+          }`}
+        >
+          <div className={`w-[420px] h-full ${sidebarOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
+            <SimulatorForm 
+              inputs={inputs} 
+              onChange={setInputs}
+              onExport={handleExport}
+            />
+          </div>
         </aside>
         
         {/* Right Panel - Preview */}
-        <main className="flex-1 overflow-auto p-8 bg-muted/30">
+        <main className="flex-1 overflow-auto p-8 bg-muted/30 relative">
+          {/* Toggle sidebar button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="absolute top-4 left-4 z-10 bg-card shadow-md"
+              >
+                {sidebarOpen ? (
+                  <PanelLeftClose className="h-4 w-4" />
+                ) : (
+                  <PanelLeft className="h-4 w-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              {sidebarOpen ? 'Masquer les paramètres' : 'Afficher les paramètres'}
+            </TooltipContent>
+          </Tooltip>
+          
           {/* Diagnostics */}
           {viewModel.diagnostics.length > 0 && (
             <div className="mb-4 max-w-[210mm] mx-auto space-y-2">
