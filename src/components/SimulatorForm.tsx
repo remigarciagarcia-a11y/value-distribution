@@ -42,6 +42,8 @@ const defaultVat = {
 export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
   const [mode, setMode] = useState<'simple' | 'detailed'>(inputs.mode);
   const [salarieAutoMode, setSalarieAutoMode] = useState(false);
+  const [entrepriseAutoMode, setEntrepriseAutoMode] = useState(false);
+  const [fonctionnelleAutoMode, setFonctionnelleAutoMode] = useState(false);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
   
   // Ensure automation fields exist (handles migration from old data structure)
@@ -374,103 +376,125 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
       
       {/* Informations entreprise */}
       <section className="form-section">
-        <h3 className="font-semibold text-sm text-primary mb-4">Informations entreprise</h3>
-        
-        {/* Pondération en premier */}
-        <div className="flex items-center gap-4 mb-4">
-          <Label>Pondération :</Label>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="ponderation"
-                checked={inputs.base.ponderation === 'HEADCOUNT'}
-                onChange={() => updateBase('ponderation', 'HEADCOUNT')}
-                className="accent-primary"
-              />
-              Effectif
-            </label>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="ponderation"
-                checked={inputs.base.ponderation === 'FTE'}
-                onChange={() => updateBase('ponderation', 'FTE')}
-                className="accent-primary"
-              />
-              ETP
-            </label>
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-sm text-primary">Informations entreprise</h3>
+          <button
+            type="button"
+            onClick={() => setEntrepriseAutoMode(!entrepriseAutoMode)}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+              entrepriseAutoMode 
+                ? 'bg-primary/10 text-primary' 
+                : 'bg-muted text-muted-foreground'
+            }`}
+          >
+            {entrepriseAutoMode ? <Zap className="w-3 h-3" /> : <PenLine className="w-3 h-3" />}
+            {entrepriseAutoMode ? 'Auto' : 'Manuel'}
+          </button>
         </div>
         
-        <div className="mb-4">
-          {inputs.base.ponderation === 'HEADCOUNT' ? (
-            <div>
-              <Label htmlFor="effectif">Effectif (têtes)</Label>
-              <Input
-                id="effectif"
-                type="number"
-                value={inputs.base.effectif ?? ''}
-                onChange={(e) => updateBase('effectif', parseNumber(e.target.value))}
-              />
+        {entrepriseAutoMode ? (
+          <p className="text-xs text-muted-foreground">
+            Les informations entreprise sont calculées automatiquement à partir du scénario sélectionné.
+          </p>
+        ) : (
+          <>
+            {/* Pondération en premier */}
+            <div className="flex items-center gap-4 mb-4">
+              <Label>Pondération :</Label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="ponderation"
+                    checked={inputs.base.ponderation === 'HEADCOUNT'}
+                    onChange={() => updateBase('ponderation', 'HEADCOUNT')}
+                    className="accent-primary"
+                  />
+                  Effectif
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="ponderation"
+                    checked={inputs.base.ponderation === 'FTE'}
+                    onChange={() => updateBase('ponderation', 'FTE')}
+                    className="accent-primary"
+                  />
+                  ETP
+                </label>
+              </div>
             </div>
-          ) : (
-            <div>
-              <Label htmlFor="etp">ETP</Label>
-              <Input
-                id="etp"
-                type="number"
-                step="0.5"
-                value={inputs.base.etp ?? ''}
-                onChange={(e) => updateBase('etp', parseNumber(e.target.value))}
-              />
+            
+            <div className="mb-4">
+              {inputs.base.ponderation === 'HEADCOUNT' ? (
+                <div>
+                  <Label htmlFor="effectif">Effectif (têtes)</Label>
+                  <Input
+                    id="effectif"
+                    type="number"
+                    value={inputs.base.effectif ?? ''}
+                    onChange={(e) => updateBase('effectif', parseNumber(e.target.value))}
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label htmlFor="etp">ETP</Label>
+                  <Input
+                    id="etp"
+                    type="number"
+                    step="0.5"
+                    value={inputs.base.etp ?? ''}
+                    onChange={(e) => updateBase('etp', parseNumber(e.target.value))}
+                  />
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="ca">CA annuel HT (€)</Label>
-            <Input
-              id="ca"
-              type="text"
-              placeholder="Ex: 1 000 000"
-              value={inputs.base.caAnnuelHT ?? ''}
-              onChange={(e) => updateBase('caAnnuelHT', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="taxableProfit">Bénéfice imposable annuel (€)</Label>
-            <Input
-              id="taxableProfit"
-              type="text"
-              placeholder="Ex: 150 000"
-              value={company.taxableProfitAnnual ?? ''}
-              onChange={(e) => updateSocialeCompany('taxableProfitAnnual', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="dividendes">Dividendes (€/an)</Label>
-            <Input
-              id="dividendes"
-              type="text"
-              value={inputs.capital.dividendes ?? ''}
-              onChange={(e) => updateCapital('dividendes', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="reserves">Réserves (€/an)</Label>
-            <Input
-              id="reserves"
-              type="text"
-              value={inputs.capital.reserves ?? ''}
-              onChange={(e) => updateCapital('reserves', parseNumber(e.target.value))}
-            />
-          </div>
-        </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="ca">CA annuel HT (€)</Label>
+                <Input
+                  id="ca"
+                  type="text"
+                  placeholder="Ex: 1 000 000"
+                  value={inputs.base.caAnnuelHT ?? ''}
+                  onChange={(e) => updateBase('caAnnuelHT', parseNumber(e.target.value))}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="taxableProfit">Bénéfice imposable annuel (€)</Label>
+                <Input
+                  id="taxableProfit"
+                  type="text"
+                  placeholder="Ex: 150 000"
+                  value={company.taxableProfitAnnual ?? ''}
+                  onChange={(e) => updateSocialeCompany('taxableProfitAnnual', parseNumber(e.target.value))}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="dividendes">Dividendes (€/an)</Label>
+                <Input
+                  id="dividendes"
+                  type="text"
+                  value={inputs.capital.dividendes ?? ''}
+                  onChange={(e) => updateCapital('dividendes', parseNumber(e.target.value))}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="reserves">Réserves (€/an)</Label>
+                <Input
+                  id="reserves"
+                  type="text"
+                  value={inputs.capital.reserves ?? ''}
+                  onChange={(e) => updateCapital('reserves', parseNumber(e.target.value))}
+                />
+              </div>
+            </div>
+          </>
+        )}
         
         {/* TVA intégrée */}
         <div className="mt-6 p-4 bg-muted/30 rounded-lg">
@@ -584,83 +608,105 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
       
       {/* Fonctionnelle */}
       <section className="form-section">
-        <h3 className="font-semibold text-sm text-primary mb-4">Part Fonctionnelle (annuel €)</h3>
-        
-        <p className="text-xs text-muted-foreground mb-3">Organisation</p>
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <Label htmlFor="locaux">Locaux / énergie</Label>
-            <Input
-              id="locaux"
-              type="text"
-              value={inputs.organisation.locauxEnergie ?? ''}
-              onChange={(e) => updateOrganisation('locauxEnergie', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="it">IT / outils / infra</Label>
-            <Input
-              id="it"
-              type="text"
-              value={inputs.organisation.outilsIT ?? ''}
-              onChange={(e) => updateOrganisation('outilsIT', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="management">Management intermédiaire</Label>
-            <Input
-              id="management"
-              type="text"
-              value={inputs.organisation.managementIntermediaire ?? ''}
-              onChange={(e) => updateOrganisation('managementIntermediaire', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="support">Fonctions support</Label>
-            <Input
-              id="support"
-              type="text"
-              value={inputs.organisation.fonctionsSupport ?? ''}
-              onChange={(e) => updateOrganisation('fonctionsSupport', parseNumber(e.target.value))}
-            />
-          </div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-sm text-primary">Part Fonctionnelle (annuel €)</h3>
+          <button
+            type="button"
+            onClick={() => setFonctionnelleAutoMode(!fonctionnelleAutoMode)}
+            className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+              fonctionnelleAutoMode 
+                ? 'bg-primary/10 text-primary' 
+                : 'bg-muted text-muted-foreground'
+            }`}
+          >
+            {fonctionnelleAutoMode ? <Zap className="w-3 h-3" /> : <PenLine className="w-3 h-3" />}
+            {fonctionnelleAutoMode ? 'Auto' : 'Manuel'}
+          </button>
         </div>
         
-        <p className="text-xs text-muted-foreground mb-3">Investissement</p>
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="amortissements">Amortissements</Label>
-            <Input
-              id="amortissements"
-              type="text"
-              value={inputs.investissement.amortissements ?? ''}
-              onChange={(e) => updateInvestissement('amortissements', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="formation">Formation</Label>
-            <Input
-              id="formation"
-              type="text"
-              value={inputs.investissement.formation ?? ''}
-              onChange={(e) => updateInvestissement('formation', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="rnd">R&D / innovation</Label>
-            <Input
-              id="rnd"
-              type="text"
-              value={inputs.investissement.rAndD ?? ''}
-              onChange={(e) => updateInvestissement('rAndD', parseNumber(e.target.value))}
-            />
-          </div>
-        </div>
+        {fonctionnelleAutoMode ? (
+          <p className="text-xs text-muted-foreground">
+            Les charges fonctionnelles sont calculées automatiquement à partir du scénario sélectionné.
+          </p>
+        ) : (
+          <>
+            <p className="text-xs text-muted-foreground mb-3">Organisation</p>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <div>
+                <Label htmlFor="locaux">Locaux / énergie</Label>
+                <Input
+                  id="locaux"
+                  type="text"
+                  value={inputs.organisation.locauxEnergie ?? ''}
+                  onChange={(e) => updateOrganisation('locauxEnergie', parseNumber(e.target.value))}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="it">IT / outils / infra</Label>
+                <Input
+                  id="it"
+                  type="text"
+                  value={inputs.organisation.outilsIT ?? ''}
+                  onChange={(e) => updateOrganisation('outilsIT', parseNumber(e.target.value))}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="management">Management intermédiaire</Label>
+                <Input
+                  id="management"
+                  type="text"
+                  value={inputs.organisation.managementIntermediaire ?? ''}
+                  onChange={(e) => updateOrganisation('managementIntermediaire', parseNumber(e.target.value))}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="support">Fonctions support</Label>
+                <Input
+                  id="support"
+                  type="text"
+                  value={inputs.organisation.fonctionsSupport ?? ''}
+                  onChange={(e) => updateOrganisation('fonctionsSupport', parseNumber(e.target.value))}
+                />
+              </div>
+            </div>
+            
+            <p className="text-xs text-muted-foreground mb-3">Investissement</p>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="amortissements">Amortissements</Label>
+                <Input
+                  id="amortissements"
+                  type="text"
+                  value={inputs.investissement.amortissements ?? ''}
+                  onChange={(e) => updateInvestissement('amortissements', parseNumber(e.target.value))}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="formation">Formation</Label>
+                <Input
+                  id="formation"
+                  type="text"
+                  value={inputs.investissement.formation ?? ''}
+                  onChange={(e) => updateInvestissement('formation', parseNumber(e.target.value))}
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="rnd">R&D / innovation</Label>
+                <Input
+                  id="rnd"
+                  type="text"
+                  value={inputs.investissement.rAndD ?? ''}
+                  onChange={(e) => updateInvestissement('rAndD', parseNumber(e.target.value))}
+                />
+              </div>
+            </div>
+          </>
+        )}
       </section>
       
       {/* Sociale - AUTOMATISATION */}
