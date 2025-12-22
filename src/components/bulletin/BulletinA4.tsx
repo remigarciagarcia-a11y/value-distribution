@@ -221,14 +221,22 @@ export function BulletinA4({ viewModel }: BulletinA4Props) {
                     <SectionLine key={i} line={line} showRate={true} />
                   ))}
                 </div>
+              </div>
+              
+              <div className="w-64 flex-shrink-0">
+                <HighlightBox>
+                  Financement des droits sociaux de l'année en cours : santé, retraite, chômage, solidarité.
+                  <br /><br />
+                  Elle permet d'assurer une protection indépendante des aléas individuels et de sécuriser les parcours de vie.
+                </HighlightBox>
                 
-                {/* Deficit box */}
+                {/* Deficit box - under the note */}
                 {deficitDette.montant !== null && (
-                  <div className="ml-11 mt-4 p-3 bg-muted rounded-lg flex items-center justify-between gap-4">
-                    <span className="text-xs text-muted-foreground leading-tight">
+                  <div className="mt-4 p-3 bg-muted rounded-lg">
+                    <span className="text-xs text-muted-foreground leading-tight block mb-2">
                       Montant du déficit de la Sécurité Sociale et de la dette de l'État par actif.
                     </span>
-                    <div className="text-right flex-shrink-0">
+                    <div className="text-right">
                       <span className="font-mono font-bold text-sm text-primary bg-primary/10 px-2 py-1 rounded">
                         {formatCurrencyCompact(deficitDette.montant)}
                       </span>
@@ -240,14 +248,6 @@ export function BulletinA4({ viewModel }: BulletinA4Props) {
                     </div>
                   </div>
                 )}
-              </div>
-              
-              <div className="w-64 flex-shrink-0">
-                <HighlightBox>
-                  Financement des droits sociaux de l'année en cours : santé, retraite, chômage, solidarité.
-                  <br /><br />
-                  Elle permet d'assurer une protection indépendante des aléas individuels et de sécuriser les parcours de vie.
-                </HighlightBox>
               </div>
             </div>
           </section>
