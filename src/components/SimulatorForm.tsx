@@ -257,21 +257,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
   return (
     <div className="h-full overflow-y-auto p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-foreground">Paramètres</h2>
-        <div className="flex items-center gap-2">
-          <Label htmlFor="mode-toggle" className="text-sm text-muted-foreground">Détaillé</Label>
-          <Switch
-            id="mode-toggle"
-            checked={mode === 'detailed'}
-            onCheckedChange={(checked) => {
-              const newMode = checked ? 'detailed' : 'simple';
-              setMode(newMode);
-              onChange({ ...inputs, mode: newMode });
-            }}
-          />
-        </div>
-      </div>
+      <h2 className="text-lg font-semibold text-foreground">Paramètres</h2>
       
       {/* Scenario selector */}
       <div className="space-y-2">
