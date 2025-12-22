@@ -5,8 +5,11 @@ import type { SimulatorInputs, SocialeInputs } from './types';
 // Default automation config for Part Sociale
 const defaultSocialeAutomation: Pick<SocialeInputs, 'employee' | 'company' | 'vat' | 'automation'> = {
   employee: {
+    grossMonthly: null,
     brutMonthly: null,
     status: 'cadre',
+    pasRate: null,
+    irMonthlyManual: null,
   },
   company: {
     taxableProfitAnnual: null,
@@ -18,6 +21,7 @@ const defaultSocialeAutomation: Pick<SocialeInputs, 'employee' | 'company' | 'va
   },
   automation: {
     cotisationsMode: { mode: 'manual', manualValue: null },
+    irMode: { mode: 'auto', manualValue: null },
     isMode: { mode: 'manual', manualValue: null },
     vatMode: { mode: 'manual', manualValue: null },
   },
@@ -117,8 +121,11 @@ export const exampleScenario1: SimulatorInputs = {
     impotRevenu: 170,
     impotSocietes: null,
     employee: {
+      grossMonthly: 4500,
       brutMonthly: 4500,
       status: 'cadre',
+      pasRate: 0.12,
+      irMonthlyManual: null,
     },
     company: {
       taxableProfitAnnual: 150000,
@@ -130,6 +137,7 @@ export const exampleScenario1: SimulatorInputs = {
     },
     automation: {
       cotisationsMode: { mode: 'auto', manualValue: null },
+      irMode: { mode: 'auto', manualValue: null },
       isMode: { mode: 'auto', manualValue: null },
       vatMode: { mode: 'auto', manualValue: null },
     },
@@ -191,8 +199,11 @@ export const exampleScenario2: SimulatorInputs = {
     impotRevenu: 140,
     impotSocietes: 18000,
     employee: {
+      grossMonthly: 3800,
       brutMonthly: 3800,
       status: 'cadre',
+      pasRate: 0.10,
+      irMonthlyManual: null,
     },
     company: {
       taxableProfitAnnual: 45000,
@@ -204,6 +215,7 @@ export const exampleScenario2: SimulatorInputs = {
     },
     automation: {
       cotisationsMode: { mode: 'manual', manualValue: null },
+      irMode: { mode: 'auto', manualValue: null },
       isMode: { mode: 'auto', manualValue: null },
       vatMode: { mode: 'auto', manualValue: null },
     },

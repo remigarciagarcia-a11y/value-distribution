@@ -9,9 +9,11 @@ import type {
   PartSocialeDiagnostic,
   CalculationResult,
   SocialRatesConfig,
+  EmployeeSalaryResult,
 } from '../types';
 import { computeDivisor, annualToMonthlyPerPerson } from './divisor';
 import { computeSocialContributions, aggregateContributionsByCategory } from './socialContributions';
+import { computeEmployeeSalary } from './employeeSalary';
 import { computeIS } from './corporateTax';
 import { computeVAT } from './vat';
 
@@ -39,7 +41,24 @@ export function computePartSociale(
     });
   }
 
-  // 1. Compute social contributions
+  // 1. Compute employee salary (brut → net before IR → IR → net after IR)
+  const employeeResult = computeEmployeeSalary(
+    inputs.employee,
+    inputs.settings,
+    inputs.automation,
+    ratesConfig
+  );
+
+  if (employeeResult.missingInputs.length > 0) {
+    diagnostics.push({
+      type: 'warning',
+      code: 'MISSING_EMPLOYEE_INPUTS',
+      message: `Salarié: données manquantes (${employeeResult.missingInputs.join(', ')})`,
+      field: 'employee',
+    });
+  }
+
+  // 2. Compute social contributions (full: employer + employee)
   const cotisations = computeSocialContributions(
     inputs.employee,
     inputs.settings,
@@ -56,7 +75,7 @@ export function computePartSociale(
     });
   }
 
-  // 2. Compute IS (Corporate Tax)
+  // 3. Compute IS (Corporate Tax)
   const is = computeIS(
     inputs.company,
     inputs.settings,
@@ -72,7 +91,7 @@ export function computePartSociale(
     });
   }
 
-  // 3. Compute VAT
+  // 4. Compute VAT
   const vat = computeVAT(
     inputs.company,
     inputs.settings,
@@ -88,15 +107,34 @@ export function computePartSociale(
     });
   }
 
-  // 4. Income Tax (IR) - Currently manual only
-  const ir = computeIR(inputs.employee, divisorResult.divisor);
+  // 5. Income Tax (IR) - from employee calculation
+  const ir: CalculationResult = {
+    value: employeeResult.irMonthly,
+    formula: employeeResult.irMonthly !== null 
+      ? `IR (${employeeResult.irMode}) = ${employeeResult.irMonthly.toFixed(2)} €/mois`
+      : 'IR = ND (taux PAS manquant)',
+    sources: employeeResult.irMode === 'auto' ? ['Calcul PAS automatique'] : 
+             employeeResult.irMode === 'manual' ? ['Saisie manuelle'] : [],
+    assumptions: employeeResult.irMode === 'nd' ? ['IR non calculable: taux PAS requis'] : [],
+    missingInputs: employeeResult.irMode === 'nd' ? ['employee.pasRate'] : [],
+  };
 
-  // 5. Aggregate totals
+  if (ir.missingInputs.length > 0) {
+    diagnostics.push({
+      type: 'info',
+      code: 'MISSING_IR_INPUTS',
+      message: `IR: taux PAS manquant`,
+      field: 'ir',
+    });
+  }
+
+  // 6. Aggregate totals
+  // Part sociale = cotisations (total) + IR + IS (mensuel/pers) + TVA (mensuel/pers)
   const components: (number | null)[] = [
     cotisations.totalMonthly,
+    ir.value,
     is.monthlyPerPerson,
     vat.netMonthlyPerPerson,
-    ir.value,
   ];
 
   const nonNullComponents = components.filter((c): c is number => c !== null);
@@ -139,42 +177,13 @@ export function computePartSociale(
     is,
     vat,
     ir,
+    employee: employeeResult,
     total: {
       monthlyPerPerson: totalMonthly,
       isPartial,
       formula,
     },
     diagnostics,
-  };
-}
-
-/**
- * Compute Income Tax (IR) contribution
- * V1: Manual input only (employee.irMonthly)
- */
-function computeIR(
-  employee: { irMonthly: number | null },
-  divisor: number | null
-): CalculationResult {
-  const missingInputs: string[] = [];
-
-  if (employee.irMonthly === null) {
-    // IR is optional in V1 - return null without error
-    return {
-      value: null,
-      formula: 'IR = (non renseigné)',
-      sources: [],
-      assumptions: ['IR non automatisé en V1'],
-      missingInputs: [],
-    };
-  }
-
-  return {
-    value: employee.irMonthly,
-    formula: `IR = ${employee.irMonthly.toFixed(2)} €/mois (saisie manuelle)`,
-    sources: ['Saisie utilisateur'],
-    assumptions: [],
-    missingInputs,
   };
 }
 

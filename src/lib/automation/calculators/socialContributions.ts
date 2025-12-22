@@ -1,6 +1,6 @@
 // ============================================
 // SOCIAL CONTRIBUTIONS CALCULATOR
-// France V1
+// France V1 - Employer + Employee combined
 // ============================================
 
 import type {
@@ -19,7 +19,7 @@ import ratesFr2025 from '../rates/fr/2025/social.json';
 /**
  * Compute social contributions (employer + employee combined)
  * 
- * @param employee Employee inputs (must have brutMonthly for auto mode)
+ * @param employee Employee inputs (must have grossMonthly or brutMonthly for auto mode)
  * @param settings Calculation settings
  * @param automation Automation config (auto/manual mode)
  * @param ratesConfig Optional rates configuration
@@ -62,6 +62,9 @@ export function computeSocialContributions(
       value: totalMonthly,
       totalMonthly,
       totalAnnual,
+      totalMonthlyEmployer: null,
+      totalMonthlyEmployee: null,
+      csgCrdsMonthly: null,
       lines: [],
       formula: 'Mode manuel: valeur saisie par l\'utilisateur',
       sources: ['Saisie manuelle'],
@@ -70,13 +73,18 @@ export function computeSocialContributions(
     };
   }
 
-  // AUTO mode - need brutMonthly
-  if (employee.brutMonthly === null || employee.brutMonthly <= 0) {
-    missingInputs.push('employee.brutMonthly');
+  // AUTO mode - need grossMonthly (with fallback to brutMonthly)
+  const grossMonthly = employee.grossMonthly ?? employee.brutMonthly ?? null;
+  
+  if (grossMonthly === null || grossMonthly <= 0) {
+    missingInputs.push('employee.grossMonthly');
     return {
       value: null,
       totalMonthly: null,
       totalAnnual: null,
+      totalMonthlyEmployer: null,
+      totalMonthlyEmployee: null,
+      csgCrdsMonthly: null,
       lines: [],
       formula: 'Cotisations = Σ(assiette × taux) — Salaire brut requis',
       sources: [],
@@ -85,13 +93,16 @@ export function computeSocialContributions(
     };
   }
 
-  const brutMonthly = employee.brutMonthly;
   const pmssMonthly = ratesConfig.pmss.monthly;
-  const brutPlafonne = Math.min(brutMonthly, pmssMonthly);
+  const brutPlafonne = Math.min(grossMonthly, pmssMonthly);
 
   sources.push(`Barème cotisations ${ratesConfig.year}`);
   sources.push(`PMSS ${ratesConfig.year}: ${pmssMonthly.toLocaleString('fr-FR')} €/mois`);
   assumptions.push('Taux standards sans réduction Fillon');
+
+  let totalMonthlyEmployer = 0;
+  let totalMonthlyEmployee = 0;
+  let csgCrdsMonthly = 0;
 
   // Calculate each contribution
   for (const contrib of ratesConfig.contributions) {
@@ -106,26 +117,39 @@ export function computeSocialContributions(
       baseAmount = brutPlafonne;
       baseUsed = 'brut_plafonne_pmss';
     } else {
-      baseAmount = brutMonthly;
+      baseAmount = grossMonthly;
       baseUsed = 'brut_total';
     }
 
     // CSG/CRDS is calculated on 98.25% of brut
     let adjustedBase = baseAmount;
     if (contrib.category === 'csg_crds') {
-      adjustedBase = baseAmount * 0.9825;
+      adjustedBase = grossMonthly * 0.9825;
       assumptions.push(`${contrib.labelFr}: calculé sur 98.25% du brut`);
     }
 
-    const valueMonthly = adjustedBase * contrib.rateTotal;
+    const valueMonthlyEmployer = adjustedBase * contrib.rateEmployer;
+    const valueMonthlyEmployee = adjustedBase * contrib.rateEmployee;
+    const valueMonthly = valueMonthlyEmployer + valueMonthlyEmployee;
+
+    totalMonthlyEmployer += valueMonthlyEmployer;
+    totalMonthlyEmployee += valueMonthlyEmployee;
+
+    if (contrib.category === 'csg_crds') {
+      csgCrdsMonthly += valueMonthlyEmployee;
+    }
 
     const line: ContributionLine = {
       label: contrib.labelFr,
       category: contrib.category,
       baseUsed,
       rate: contrib.rateTotal,
+      rateEmployer: contrib.rateEmployer,
+      rateEmployee: contrib.rateEmployee,
       baseAmount: adjustedBase,
       valueMonthly,
+      valueMonthlyEmployer,
+      valueMonthlyEmployee,
       formula: `${adjustedBase.toFixed(2)} € × ${(contrib.rateTotal * 100).toFixed(2)}% = ${valueMonthly.toFixed(2)} €`,
     };
 
@@ -133,19 +157,16 @@ export function computeSocialContributions(
   }
 
   // Calculate totals
-  const totalMonthly = lines.reduce((sum, line) => sum + (line.valueMonthly ?? 0), 0);
+  const totalMonthly = totalMonthlyEmployer + totalMonthlyEmployee;
   const totalAnnual = totalMonthly * 12;
-
-  // Group by category for summary
-  const byCategory: Record<string, number> = {};
-  for (const line of lines) {
-    byCategory[line.category] = (byCategory[line.category] ?? 0) + (line.valueMonthly ?? 0);
-  }
 
   return {
     value: totalMonthly,
     totalMonthly,
     totalAnnual,
+    totalMonthlyEmployer,
+    totalMonthlyEmployee,
+    csgCrdsMonthly,
     lines,
     formula: `Cotisations sociales (${employee.status}) = ${totalMonthly.toFixed(2)} €/mois`,
     sources,
