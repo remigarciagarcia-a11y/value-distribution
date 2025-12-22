@@ -511,6 +511,53 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
       <section className="form-section">
         <h3 className="font-semibold text-sm text-primary mb-4">Part Sociale</h3>
         
+        {/* Salaire brut - TOUJOURS VISIBLE (source de vérité) */}
+        <div className="mb-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+          <p className="text-xs font-medium text-primary mb-3">💰 Salaire (source de vérité)</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="grossMonthly">Salaire brut mensuel (€)</Label>
+              <Input
+                id="grossMonthly"
+                type="text"
+                placeholder="Ex: 4 500"
+                value={employee.grossMonthly ?? employee.brutMonthly ?? ''}
+                onChange={(e) => {
+                  const val = parseNumber(e.target.value);
+                  updateSocialeEmployee('grossMonthly', val);
+                  updateSocialeEmployee('brutMonthly', val);
+                }}
+                className="font-medium"
+              />
+            </div>
+            <div>
+              <Label>Statut</Label>
+              <div className="flex gap-4 mt-2">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="employeeStatus"
+                    checked={employee.status === 'cadre'}
+                    onChange={() => updateSocialeEmployee('status', 'cadre' as EmployeeStatusType)}
+                    className="accent-primary"
+                  />
+                  Cadre
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="radio"
+                    name="employeeStatus"
+                    checked={employee.status === 'non_cadre'}
+                    onChange={() => updateSocialeEmployee('status', 'non_cadre' as EmployeeStatusType)}
+                    className="accent-primary"
+                  />
+                  Non-cadre
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         {/* Cotisations sociales */}
         <div className="mb-6 p-4 bg-muted/30 rounded-lg">
           <ModeToggle
@@ -520,47 +567,9 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
           />
           
           {automation.cotisationsMode.mode === 'auto' ? (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="grossMonthly">Salaire brut mensuel (€)</Label>
-                <Input
-                  id="grossMonthly"
-                  type="text"
-                  placeholder="Ex: 4 500"
-                  value={employee.grossMonthly ?? employee.brutMonthly ?? ''}
-                  onChange={(e) => {
-                    const val = parseNumber(e.target.value);
-                    updateSocialeEmployee('grossMonthly', val);
-                    updateSocialeEmployee('brutMonthly', val);
-                  }}
-                />
-              </div>
-              <div>
-                <Label>Statut</Label>
-                <div className="flex gap-4 mt-2">
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      name="employeeStatus"
-                      checked={employee.status === 'cadre'}
-                      onChange={() => updateSocialeEmployee('status', 'cadre' as EmployeeStatusType)}
-                      className="accent-primary"
-                    />
-                    Cadre
-                  </label>
-                  <label className="flex items-center gap-2 text-sm">
-                    <input
-                      type="radio"
-                      name="employeeStatus"
-                      checked={employee.status === 'non_cadre'}
-                      onChange={() => updateSocialeEmployee('status', 'non_cadre' as EmployeeStatusType)}
-                      className="accent-primary"
-                    />
-                    Non-cadre
-                  </label>
-                </div>
-              </div>
-            </div>
+            <p className="text-xs text-muted-foreground">
+              Calculées automatiquement à partir du salaire brut
+            </p>
           ) : (
             <div className="grid grid-cols-3 gap-4">
               <div>
@@ -810,17 +819,12 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
       <section className="form-section">
         <h3 className="font-semibold text-sm text-primary mb-4">Part Personnelle (mensuel €)</h3>
         
+        <p className="text-xs text-muted-foreground mb-3">
+          Le salaire net après IR est calculé automatiquement à partir du brut.
+          Vous pouvez ajouter des primes et avantages ci-dessous.
+        </p>
+        
         <div className="space-y-4">
-          <div>
-            <Label htmlFor="salaire">Salaire net après IR</Label>
-            <Input
-              id="salaire"
-              type="text"
-              value={inputs.partPersonnelle.salaireNetApresIR ?? ''}
-              onChange={(e) => updatePartPersonnelle('salaireNetApresIR', parseNumber(e.target.value))}
-            />
-          </div>
-          
           {/* Primes */}
           <div>
             <div className="flex items-center justify-between mb-2">
