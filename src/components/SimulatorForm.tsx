@@ -15,10 +15,10 @@ interface SimulatorFormProps {
 
 // Default values for automation fields (handles migration from old data)
 const defaultAutomation = {
-  cotisationsMode: { mode: 'manual' as AutoModeType, manualValue: null },
+  cotisationsMode: { mode: 'auto' as AutoModeType, manualValue: null },
   irMode: { mode: 'auto' as AutoModeType, manualValue: null },
-  isMode: { mode: 'manual' as AutoModeType, manualValue: null },
-  vatMode: { mode: 'manual' as AutoModeType, manualValue: null },
+  isMode: { mode: 'auto' as AutoModeType, manualValue: null },
+  vatMode: { mode: 'auto' as AutoModeType, manualValue: null },
 };
 
 const defaultEmployee = {
