@@ -2,6 +2,8 @@
 
 // ===== ENUMS =====
 export type PonderationType = 'HEADCOUNT' | 'FTE';
+export type EmployeeStatusType = 'cadre' | 'non_cadre';
+export type AutoModeType = 'auto' | 'manual';
 
 // ===== INPUT TYPES =====
 
@@ -35,7 +37,42 @@ export interface InvestissementInputs {
   rAndD: number | null;
 }
 
+// ===== AUTOMATION INPUTS =====
+
+export interface AutoModeConfig {
+  mode: AutoModeType;
+  manualValue: number | null;
+}
+
+export interface EmployeeAutomationInputs {
+  brutMonthly: number | null;
+  status: EmployeeStatusType;
+}
+
+export interface CompanyAutomationInputs {
+  taxableProfitAnnual: number | null;
+  isReducedRateEnabled: boolean;
+}
+
+export interface VATLineInput {
+  id: string;
+  rate: number;
+  baseHTAnnual: number | null;
+}
+
+export interface VATAutomationInputs {
+  sales: VATLineInput[];
+  purchases: VATLineInput[];
+}
+
+export interface SocialeAutomationConfig {
+  cotisationsMode: AutoModeConfig;
+  isMode: AutoModeConfig;
+  vatMode: AutoModeConfig;
+}
+
 export interface SocialeInputs {
+  // Legacy manual values (used when mode = manual)
   sante: number | null;
   retraite: number | null;
   chomage: number | null;
@@ -43,6 +80,11 @@ export interface SocialeInputs {
   csgCrds: number | null;
   impotRevenu: number | null;
   impotSocietes: number | null;
+  // Automation inputs
+  employee: EmployeeAutomationInputs;
+  company: CompanyAutomationInputs;
+  vat: VATAutomationInputs;
+  automation: SocialeAutomationConfig;
 }
 
 export interface SalarieIdentite {

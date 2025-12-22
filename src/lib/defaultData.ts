@@ -1,10 +1,31 @@
 // Default data and example scenarios for the simulator
 
-import type { SimulatorInputs } from './types';
+import type { SimulatorInputs, SocialeInputs } from './types';
+
+// Default automation config for Part Sociale
+const defaultSocialeAutomation: Pick<SocialeInputs, 'employee' | 'company' | 'vat' | 'automation'> = {
+  employee: {
+    brutMonthly: null,
+    status: 'cadre',
+  },
+  company: {
+    taxableProfitAnnual: null,
+    isReducedRateEnabled: false,
+  },
+  vat: {
+    sales: [],
+    purchases: [],
+  },
+  automation: {
+    cotisationsMode: { mode: 'manual', manualValue: null },
+    isMode: { mode: 'manual', manualValue: null },
+    vatMode: { mode: 'manual', manualValue: null },
+  },
+};
 
 export const emptyInputs: SimulatorInputs = {
   base: {
-    anneeReference: '2024',
+    anneeReference: '2025',
     caAnnuelHT: null,
     ponderation: 'HEADCOUNT',
     effectif: null,
@@ -37,6 +58,7 @@ export const emptyInputs: SimulatorInputs = {
     csgCrds: null,
     impotRevenu: null,
     impotSocietes: null,
+    ...defaultSocialeAutomation,
   },
   salarie: {
     nom: '',
@@ -61,7 +83,7 @@ export const emptyInputs: SimulatorInputs = {
 // Example scenario matching the reference design
 export const exampleScenario1: SimulatorInputs = {
   base: {
-    anneeReference: '2024',
+    anneeReference: '2025',
     caAnnuelHT: 1047600, // 8730 × 12 × 10 = gives 8730 VP with 10 employees
     ponderation: 'HEADCOUNT',
     effectif: 10,
@@ -94,6 +116,23 @@ export const exampleScenario1: SimulatorInputs = {
     csgCrds: 210,
     impotRevenu: 170,
     impotSocietes: null,
+    employee: {
+      brutMonthly: 4500,
+      status: 'cadre',
+    },
+    company: {
+      taxableProfitAnnual: 150000,
+      isReducedRateEnabled: true,
+    },
+    vat: {
+      sales: [{ id: '1', rate: 0.20, baseHTAnnual: 1047600 }],
+      purchases: [{ id: '2', rate: 0.20, baseHTAnnual: 400000 }],
+    },
+    automation: {
+      cotisationsMode: { mode: 'auto', manualValue: null },
+      isMode: { mode: 'auto', manualValue: null },
+      vatMode: { mode: 'auto', manualValue: null },
+    },
   },
   salarie: {
     nom: 'Karl Marx',
@@ -118,7 +157,7 @@ export const exampleScenario1: SimulatorInputs = {
 // Second scenario: smaller company
 export const exampleScenario2: SimulatorInputs = {
   base: {
-    anneeReference: '2024',
+    anneeReference: '2025',
     caAnnuelHT: 360000,
     ponderation: 'HEADCOUNT',
     effectif: 5,
@@ -151,6 +190,23 @@ export const exampleScenario2: SimulatorInputs = {
     csgCrds: 180,
     impotRevenu: 140,
     impotSocietes: 18000,
+    employee: {
+      brutMonthly: 3800,
+      status: 'cadre',
+    },
+    company: {
+      taxableProfitAnnual: 45000,
+      isReducedRateEnabled: true,
+    },
+    vat: {
+      sales: [{ id: '1', rate: 0.20, baseHTAnnual: 360000 }],
+      purchases: [{ id: '2', rate: 0.20, baseHTAnnual: 150000 }],
+    },
+    automation: {
+      cotisationsMode: { mode: 'manual', manualValue: null },
+      isMode: { mode: 'auto', manualValue: null },
+      vatMode: { mode: 'auto', manualValue: null },
+    },
   },
   salarie: {
     nom: 'Marie Curie',
