@@ -689,20 +689,23 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
           />
           
           {(automation.irMode?.mode ?? 'auto') === 'auto' ? (
-            <div className="w-1/2">
-              <Label htmlFor="pasRate">Taux PAS (%)</Label>
-              <Input
-                id="pasRate"
-                type="text"
-                placeholder="Ex: 12"
-                value={employee.pasRate !== null ? (employee.pasRate * 100).toString() : ''}
-                onChange={(e) => {
-                  const val = parseNumber(e.target.value);
-                  updateSocialeEmployee({ pasRate: val !== null ? val / 100 : null });
-                }}
-              />
-              <p className="text-xs text-muted-foreground mt-1">
-                Taux de prélèvement à la source (0-50%)
+            <div>
+              <div className="w-1/2">
+                <Label htmlFor="pasRate">Taux PAS (%)</Label>
+                <Input
+                  id="pasRate"
+                  type="text"
+                  placeholder="Ex: 7.5"
+                  value={employee.pasRate !== null ? (employee.pasRate * 100).toString() : ''}
+                  onChange={(e) => {
+                    const val = parseNumber(e.target.value);
+                    updateSocialeEmployee({ pasRate: val !== null ? val / 100 : null });
+                  }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                💡 <strong>Requis</strong> : Saisissez votre taux de prélèvement à la source (visible sur votre fiche de paie ou avis d'imposition). 
+                Exemples : 0% (non imposable), 7.5% (revenu moyen), 15% (revenu élevé).
               </p>
             </div>
           ) : (
@@ -711,6 +714,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
               <Input
                 id="irManual"
                 type="text"
+                placeholder="Ex: 350"
                 value={employee.irMonthlyManual ?? inputs.sociale.impotRevenu ?? ''}
                 onChange={(e) => {
                   const val = parseNumber(e.target.value);
@@ -718,6 +722,9 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                   updateSociale('impotRevenu', val);
                 }}
               />
+              <p className="text-xs text-muted-foreground mt-1">
+                Montant mensuel de l'impôt sur le revenu prélevé à la source
+              </p>
             </div>
           )}
         </div>
