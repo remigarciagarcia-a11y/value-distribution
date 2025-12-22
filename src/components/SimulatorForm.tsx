@@ -272,7 +272,9 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
       </div>
       
       {/* Scenario selector */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="space-y-2">
+        <h3 className="text-sm font-medium text-muted-foreground">Scénarios</h3>
+        <div className="flex gap-2 flex-wrap">
         {scenarios.map(s => (
           <Button
             key={s.id}
@@ -285,6 +287,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
             {s.label}
           </Button>
         ))}
+        </div>
       </div>
       
       {/* Salarié - MOVED TO FIRST */}
