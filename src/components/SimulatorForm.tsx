@@ -42,6 +42,7 @@ const defaultVat = {
 export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
   const [mode, setMode] = useState<'simple' | 'detailed'>(inputs.mode);
   const [salarieAutoMode, setSalarieAutoMode] = useState(false);
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
   
   // Ensure automation fields exist (handles migration from old data structure)
   const automation = inputs.sociale.automation ?? defaultAutomation;
@@ -174,6 +175,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
     const scenario = scenarios.find(s => s.id === scenarioId);
     if (scenario) {
       onChange(scenario.data);
+      setSelectedScenarioId(scenarioId);
     }
   };
   
@@ -278,10 +280,10 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
         {scenarios.map(s => (
           <Button
             key={s.id}
-            variant="outline"
+            variant={selectedScenarioId === s.id ? "default" : "outline"}
             size="sm"
             onClick={() => loadScenario(s.id)}
-            className="text-xs"
+            className={`text-xs transition-all ${selectedScenarioId === s.id ? 'ring-2 ring-primary ring-offset-2' : ''}`}
           >
             <FileText className="w-3 h-3 mr-1" />
             {s.label}
