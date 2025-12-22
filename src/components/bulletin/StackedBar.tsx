@@ -51,10 +51,8 @@ export function StackedBar({ viewModel }: StackedBarProps) {
         </div>
       )}
       
-      {/* 100% VP indicator */}
-      <div className="h-32 flex flex-col items-center justify-end pb-2 bg-gradient-to-b from-blue-300 to-blue-400">
-        <span className="text-[11px] font-bold text-primary-foreground">100 %</span>
-      </div>
+      {/* Top spacer */}
+      <div className="h-32 bg-gradient-to-b from-blue-300 to-blue-400" />
       
       {/* Stacked segments */}
       {segments.map((segment) => {
