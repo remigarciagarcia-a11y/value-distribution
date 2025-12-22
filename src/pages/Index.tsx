@@ -25,11 +25,18 @@ const Index = () => {
     try {
       toast.info('Génération de l\'export en cours...');
       
+      // Temporarily set explicit white background for export
+      const originalBg = bulletinRef.current.style.backgroundColor;
+      bulletinRef.current.style.backgroundColor = '#ffffff';
+      
       const canvas = await html2canvas(bulletinRef.current, {
         scale: 2,
         useCORS: true,
-        backgroundColor: '#ffffff',
+        backgroundColor: null, // Use element's own background
       });
+      
+      // Restore original background
+      bulletinRef.current.style.backgroundColor = originalBg;
       
       const link = document.createElement('a');
       link.download = `releve-contribution-${inputs.salarie.moisAffiche.replace(/\s/g, '-')}.png`;
