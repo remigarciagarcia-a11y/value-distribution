@@ -4,17 +4,16 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, FileText, Download } from 'lucide-react';
+import { Plus, Trash2, FileText } from 'lucide-react';
 import type { SimulatorInputs, PrimeOuAvantage } from '@/lib/types';
 import { scenarios } from '@/lib/defaultData';
 
 interface SimulatorFormProps {
   inputs: SimulatorInputs;
   onChange: (inputs: SimulatorInputs) => void;
-  onExport: () => void;
 }
 
-export function SimulatorForm({ inputs, onChange, onExport }: SimulatorFormProps) {
+export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
   const [mode, setMode] = useState<'simple' | 'detailed'>(inputs.mode);
   
   const updateBase = (field: keyof SimulatorInputs['base'], value: string | number | null) => {
@@ -496,14 +495,6 @@ export function SimulatorForm({ inputs, onChange, onExport }: SimulatorFormProps
             ))}
           </div>
         </div>
-      </section>
-      
-      {/* Export */}
-      <section className="sticky bottom-0 bg-background py-4 border-t">
-        <Button onClick={onExport} className="w-full">
-          <Download className="w-4 h-4 mr-2" />
-          Exporter en PNG
-        </Button>
       </section>
     </div>
   );
