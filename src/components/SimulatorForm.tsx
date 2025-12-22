@@ -156,26 +156,6 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
             />
           </div>
           
-          <div>
-            <Label htmlFor="effectif">Effectif (têtes)</Label>
-            <Input
-              id="effectif"
-              type="number"
-              value={inputs.base.effectif ?? ''}
-              onChange={(e) => updateBase('effectif', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="etp">ETP (optionnel)</Label>
-            <Input
-              id="etp"
-              type="number"
-              step="0.5"
-              value={inputs.base.etp ?? ''}
-              onChange={(e) => updateBase('etp', parseNumber(e.target.value))}
-            />
-          </div>
         </div>
         
         <div className="mt-4 flex items-center gap-4">
@@ -202,6 +182,31 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
               ETP
             </label>
           </div>
+        </div>
+        
+        <div className="mt-4">
+          {inputs.base.ponderation === 'HEADCOUNT' ? (
+            <div>
+              <Label htmlFor="effectif">Effectif (têtes)</Label>
+              <Input
+                id="effectif"
+                type="number"
+                value={inputs.base.effectif ?? ''}
+                onChange={(e) => updateBase('effectif', parseNumber(e.target.value))}
+              />
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="etp">ETP</Label>
+              <Input
+                id="etp"
+                type="number"
+                step="0.5"
+                value={inputs.base.etp ?? ''}
+                onChange={(e) => updateBase('etp', parseNumber(e.target.value))}
+              />
+            </div>
+          )}
         </div>
       </section>
       
