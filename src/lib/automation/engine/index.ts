@@ -1,10 +1,10 @@
 /**
  * Part Sociale V1 - Aggregate all social components
- * Combines: Social contributions + IR (manual) + IS + VAT (per-person)
+ * Combines: Social contributions + IR (auto/manual) + IS + VAT (per-person)
  */
 
 import { computeSocialFromGross } from './socialContributions';
-import { computeIS, computeVAT } from './taxCalculations';
+import { computeIS, computeVAT, computeIR } from './taxCalculations';
 import type {
   RatesConfig,
   SocialSettings,
@@ -35,7 +35,7 @@ function getDivisor(settings: SocialSettings): number | null {
 
 /**
  * Compute the complete Part Sociale
- * Aggregates: cotisations fusion + IR manuel + IS + TVA (per-person)
+ * Aggregates: cotisations fusion + IR (auto/manual) + IS + TVA (per-person)
  */
 export function computePartSocialeV1(
   inputs: PartSocialeV1Inputs,
@@ -53,29 +53,30 @@ export function computePartSocialeV1(
   // Compute social contributions
   const social = computeSocialFromGross(employee, company, settings, config);
   
+  // Compute IR (uses social result for net imposable calculation)
+  const ir = computeIR(employee, social, config);
+  
   // Compute IS
   const is = computeIS(company, settings, config);
   
   // Compute VAT
   const vat = computeVAT(company, settings, config);
   
-  // IR (manual)
-  const irMonthly = employee.irMonthly ?? null;
+  // IR monthly from IR result
+  const irMonthly = ir.irMonthly;
   
   // Merge diagnostics
   diagnostics.missingInputs.push(...social.diagnostics.missingInputs);
+  diagnostics.missingInputs.push(...ir.diagnostics.missingInputs);
   diagnostics.missingInputs.push(...is.diagnostics.missingInputs);
   diagnostics.missingInputs.push(...vat.diagnostics.missingInputs);
   diagnostics.warnings.push(...social.diagnostics.warnings);
+  diagnostics.warnings.push(...ir.diagnostics.warnings);
   diagnostics.warnings.push(...is.diagnostics.warnings);
   diagnostics.warnings.push(...vat.diagnostics.warnings);
   
   if (divisor === null) {
     diagnostics.missingInputs.push('divisor');
-  }
-  
-  if (irMonthly === null) {
-    diagnostics.warnings.push('IR ND: missing employee.irMonthly');
   }
   
   // Calculate total Part Sociale
@@ -103,6 +104,7 @@ export function computePartSocialeV1(
   
   return {
     social,
+    ir,
     is,
     vat,
     irMonthly,
@@ -121,5 +123,5 @@ export function computePartSocialeV1(
 // Re-export all types and functions
 export * from './types';
 export { computeSocialFromGross } from './socialContributions';
-export { computeIS, computeVAT } from './taxCalculations';
+export { computeIS, computeVAT, computeIR } from './taxCalculations';
 export { evalExpr, evalCondition } from './evaluator';
