@@ -58,7 +58,7 @@ function SmallStylizedAmount({ value }: { value: number | null }) {
 export function BulletinA4({ viewModel }: BulletinA4Props) {
   const { meta, vp, resteARedistribuer, parts, deficitDette, stackedBar } = viewModel;
   
-  const hasOverflow = stackedBar.overflowPct !== null && stackedBar.overflowPct > 0;
+  const hasOverflow = stackedBar.overflowPct !== null && stackedBar.overflowPct > 0.05;
   
   // Calculate the sum of all parts and the gap
   const sumOfParts = (parts.capital.total.total ?? 0) + 
