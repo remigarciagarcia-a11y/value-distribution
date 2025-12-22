@@ -103,12 +103,8 @@ export function BulletinA4({ viewModel }: BulletinA4Props) {
                 <p className="part-label mb-2">Valeur produite</p>
                 <StylizedAmount value={vp.value} />
                 {hasOverflow && (
-                  <p className="mt-2 text-xs text-red-600 font-medium flex items-center gap-1">
-                    <span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>
-                    Dépassement de {stackedBar.overflowPct?.toFixed(1)}% 
-                    {gapValue !== null && <span className="font-bold ml-1">({gapValue > 0 ? '+' : ''}{formatCurrencyCompact(gapValue)})</span>}
-                    <span className="mx-1">—</span>
-                    La somme des parts dépasse la valeur produite
+                  <p className="mt-2 text-xs text-red-600 font-medium">
+                    Dépassement de la Valeur Produite de {stackedBar.overflowPct?.toFixed(1)}%{gapValue !== null && <span className="font-bold"> ({gapValue > 0 ? '+' : ''}{formatCurrencyCompact(gapValue)})</span>}
                   </p>
                 )}
               </div>
