@@ -124,6 +124,39 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
     });
   };
   
+  const generateRandomSalarie = () => {
+    const prenoms = ['Jean', 'Marie', 'Pierre', 'Sophie', 'Luc', 'Claire', 'Thomas', 'Emma', 'Nicolas', 'Julie'];
+    const noms = ['Dupont', 'Martin', 'Bernard', 'Durand', 'Moreau', 'Laurent', 'Simon', 'Michel', 'Garcia', 'Roux'];
+    const postes = ['Développeur Senior', 'Chef de projet', 'Designer UX', 'Consultant', 'Data Analyst', 'Product Manager', 'DevOps Engineer'];
+    const statuts = ['Cadre - Syntec', 'Cadre - Convention Collective', 'Non-cadre - Syntec', 'Cadre - Métallurgie'];
+    const anciennetes = ['6 mois', '1 an', '2 ans', '3 ans', '5 ans', '8 ans', '10 ans'];
+    const villes = ['Paris', 'Lyon', 'Marseille', 'Toulouse', 'Bordeaux', 'Nantes', 'Lille'];
+    const rues = ['rue de la République', 'avenue des Champs', 'boulevard Victor Hugo', 'rue du Commerce', 'place de la Liberté'];
+    
+    const prenom = prenoms[Math.floor(Math.random() * prenoms.length)];
+    const nom = noms[Math.floor(Math.random() * noms.length)];
+    const ville = villes[Math.floor(Math.random() * villes.length)];
+    const rue = rues[Math.floor(Math.random() * rues.length)];
+    const numero = Math.floor(Math.random() * 150) + 1;
+    const codePostal = ville === 'Paris' ? '75001' : `${Math.floor(Math.random() * 90000) + 10000}`;
+    
+    const moisNoms = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    const moisActuel = new Date().getMonth();
+    const anneeActuelle = new Date().getFullYear();
+    
+    onChange({
+      ...inputs,
+      salarie: {
+        nom: `${prenom} ${nom}`,
+        poste: postes[Math.floor(Math.random() * postes.length)],
+        statut: statuts[Math.floor(Math.random() * statuts.length)],
+        anciennete: anciennetes[Math.floor(Math.random() * anciennetes.length)],
+        adresse: `${numero} ${rue}\n${codePostal} ${ville}`,
+        moisAffiche: `${moisNoms[moisActuel]} ${anneeActuelle}`,
+      },
+    });
+  };
+  
   const updatePartPersonnelle = (field: keyof SimulatorInputs['partPersonnelle'], value: number | null | PrimeOuAvantage[]) => {
     onChange({
       ...inputs,
@@ -253,6 +286,86 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
         ))}
       </div>
       
+      {/* Salarié - MOVED TO FIRST */}
+      <section className="form-section">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-sm text-primary">Informations salarié</h3>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={generateRandomSalarie}
+            className="text-xs"
+          >
+            <Zap className="w-3 h-3 mr-1" />
+            Auto
+          </Button>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="nom">Nom</Label>
+            <Input
+              id="nom"
+              value={inputs.salarie.nom}
+              onChange={(e) => updateSalarie('nom', e.target.value)}
+              placeholder="Ex: Jean Dupont"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="poste">Poste</Label>
+            <Input
+              id="poste"
+              value={inputs.salarie.poste}
+              onChange={(e) => updateSalarie('poste', e.target.value)}
+              placeholder="Ex: Développeur"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="statut">Statut / Convention</Label>
+            <Input
+              id="statut"
+              value={inputs.salarie.statut}
+              onChange={(e) => updateSalarie('statut', e.target.value)}
+              placeholder="Ex: Cadre - Syntec"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="anciennete">Ancienneté</Label>
+            <Input
+              id="anciennete"
+              value={inputs.salarie.anciennete}
+              onChange={(e) => updateSalarie('anciennete', e.target.value)}
+              placeholder="Ex: 2 ans"
+            />
+          </div>
+          
+          <div className="col-span-2">
+            <Label htmlFor="adresse">Adresse</Label>
+            <Textarea
+              id="adresse"
+              value={inputs.salarie.adresse}
+              onChange={(e) => updateSalarie('adresse', e.target.value)}
+              placeholder="Ex: 12 rue de Paris&#10;75001 Paris"
+              rows={2}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="mois">Période affichée</Label>
+            <Input
+              id="mois"
+              value={inputs.salarie.moisAffiche}
+              onChange={(e) => updateSalarie('moisAffiche', e.target.value)}
+              placeholder="Ex: Décembre 2025"
+            />
+          </div>
+        </div>
+      </section>
+      
       {/* Base Parameters */}
       <section className="form-section">
         <h3 className="font-semibold text-sm text-primary mb-4">Paramètres de base</h3>
@@ -329,74 +442,6 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
               />
             </div>
           )}
-        </div>
-      </section>
-      
-      {/* Salarié */}
-      <section className="form-section">
-        <h3 className="font-semibold text-sm text-primary mb-4">Informations salarié</h3>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="nom">Nom</Label>
-            <Input
-              id="nom"
-              value={inputs.salarie.nom}
-              onChange={(e) => updateSalarie('nom', e.target.value)}
-              placeholder="Ex: Jean Dupont"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="poste">Poste</Label>
-            <Input
-              id="poste"
-              value={inputs.salarie.poste}
-              onChange={(e) => updateSalarie('poste', e.target.value)}
-              placeholder="Ex: Développeur"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="statut">Statut / Convention</Label>
-            <Input
-              id="statut"
-              value={inputs.salarie.statut}
-              onChange={(e) => updateSalarie('statut', e.target.value)}
-              placeholder="Ex: Cadre - Syntec"
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="anciennete">Ancienneté</Label>
-            <Input
-              id="anciennete"
-              value={inputs.salarie.anciennete}
-              onChange={(e) => updateSalarie('anciennete', e.target.value)}
-              placeholder="Ex: 2 ans"
-            />
-          </div>
-          
-          <div className="col-span-2">
-            <Label htmlFor="adresse">Adresse</Label>
-            <Textarea
-              id="adresse"
-              value={inputs.salarie.adresse}
-              onChange={(e) => updateSalarie('adresse', e.target.value)}
-              placeholder="Ex: 12 rue de Paris&#10;75001 Paris"
-              rows={2}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="mois">Période affichée</Label>
-            <Input
-              id="mois"
-              value={inputs.salarie.moisAffiche}
-              onChange={(e) => updateSalarie('moisAffiche', e.target.value)}
-              placeholder="Ex: Décembre 2025"
-            />
-          </div>
         </div>
       </section>
       
