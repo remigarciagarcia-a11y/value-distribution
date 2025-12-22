@@ -68,7 +68,7 @@ export function BulletinA4({ viewModel }: BulletinA4Props) {
   const gapValue = vp.value !== null ? sumOfParts - vp.value : null;
   
   return (
-    <div className="bg-card shadow-document rounded-lg overflow-hidden" style={{ width: '210mm', minHeight: '297mm' }}>
+    <div data-bulletin-a4="true" className="bg-card shadow-document rounded-lg overflow-hidden" style={{ width: '210mm', minHeight: '297mm' }}>
       <div className="relative">
         {/* Left Stacked Bar */}
         <StackedBar viewModel={viewModel} />

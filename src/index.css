@@ -223,14 +223,27 @@
     .no-print {
       display: none !important;
     }
-    
+
     .document-a4 {
       box-shadow: none;
       margin: 0;
       padding: 15mm;
     }
   }
-  
+
+  /* Freeze motion for html2canvas to avoid capturing mid-animation */
+  .export-freeze,
+  .export-freeze * {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .export-freeze {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
   /* Smooth number transitions */
   .transition-numbers {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
