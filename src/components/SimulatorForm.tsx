@@ -84,11 +84,12 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
   };
   
   const updateSocialeEmployee = (field: keyof SimulatorInputs['sociale']['employee'], value: unknown) => {
+    const currentEmployee = inputs.sociale.employee ?? defaultEmployee;
     onChange({
       ...inputs,
       sociale: {
         ...inputs.sociale,
-        employee: { ...inputs.sociale.employee, [field]: value },
+        employee: { ...currentEmployee, [field]: value },
       },
     });
   };
