@@ -21,10 +21,10 @@ const defaultSocialeAutomation: Pick<SocialeInputs, 'employee' | 'company' | 'va
     purchases: [],
   },
   automation: {
-    cotisationsMode: { mode: 'manual', manualValue: null },
+    cotisationsMode: { mode: 'auto', manualValue: null },
     irMode: { mode: 'auto', manualValue: null },
-    isMode: { mode: 'manual', manualValue: null },
-    vatMode: { mode: 'manual', manualValue: null },
+    isMode: { mode: 'auto', manualValue: null },
+    vatMode: { mode: 'auto', manualValue: null },
   },
 };
 
@@ -215,7 +215,7 @@ export const exampleScenario2: SimulatorInputs = {
       purchases: [{ id: '2', rate: 0.20, baseHTAnnual: 150000 }],
     },
     automation: {
-      cotisationsMode: { mode: 'manual', manualValue: null },
+      cotisationsMode: { mode: 'auto', manualValue: null },
       irMode: { mode: 'auto', manualValue: null },
       isMode: { mode: 'auto', manualValue: null },
       vatMode: { mode: 'auto', manualValue: null },
