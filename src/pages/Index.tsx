@@ -7,7 +7,7 @@ import { calculateBulletin } from '@/lib/calculationEngine';
 import { exampleScenario1 } from '@/lib/defaultData';
 import type { SimulatorInputs } from '@/lib/types';
 import { toast } from 'sonner';
-import { AlertCircle, Info, PanelLeftClose, PanelLeft } from 'lucide-react';
+import { AlertCircle, Info, PanelLeftClose, PanelLeft, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -61,33 +61,39 @@ const Index = () => {
             <SimulatorForm 
               inputs={inputs} 
               onChange={setInputs}
-              onExport={handleExport}
             />
           </div>
         </aside>
         
         {/* Right Panel - Preview */}
         <main className="flex-1 overflow-auto p-8 bg-muted/30 relative">
-          {/* Toggle sidebar button */}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="absolute top-4 left-4 z-10 bg-card shadow-md"
-              >
-                {sidebarOpen ? (
-                  <PanelLeftClose className="h-4 w-4" />
-                ) : (
-                  <PanelLeft className="h-4 w-4" />
-                )}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              {sidebarOpen ? 'Masquer les paramètres' : 'Afficher les paramètres'}
-            </TooltipContent>
-          </Tooltip>
+          {/* Top bar with toggle and export buttons */}
+          <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-center">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="bg-card shadow-md"
+                >
+                  {sidebarOpen ? (
+                    <PanelLeftClose className="h-4 w-4" />
+                  ) : (
+                    <PanelLeft className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                {sidebarOpen ? 'Masquer les paramètres' : 'Afficher les paramètres'}
+              </TooltipContent>
+            </Tooltip>
+            
+            <Button onClick={handleExport} className="shadow-md">
+              <Download className="w-4 h-4 mr-2" />
+              Exporter en PNG
+            </Button>
+          </div>
           
           {/* Diagnostics */}
           {viewModel.diagnostics.length > 0 && (
