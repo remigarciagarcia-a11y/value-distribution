@@ -16,13 +16,17 @@ interface SimulatorFormProps {
 // Default values for automation fields (handles migration from old data)
 const defaultAutomation = {
   cotisationsMode: { mode: 'manual' as AutoModeType, manualValue: null },
+  irMode: { mode: 'auto' as AutoModeType, manualValue: null },
   isMode: { mode: 'manual' as AutoModeType, manualValue: null },
   vatMode: { mode: 'manual' as AutoModeType, manualValue: null },
 };
 
 const defaultEmployee = {
+  grossMonthly: null,
   brutMonthly: null,
   status: 'cadre' as EmployeeStatusType,
+  pasRate: null,
+  irMonthlyManual: null,
 };
 
 const defaultCompany = {
@@ -518,13 +522,17 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
           {automation.cotisationsMode.mode === 'auto' ? (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="brutMonthly">Salaire brut mensuel (€)</Label>
+                <Label htmlFor="grossMonthly">Salaire brut mensuel (€)</Label>
                 <Input
-                  id="brutMonthly"
+                  id="grossMonthly"
                   type="text"
                   placeholder="Ex: 4 500"
-                  value={employee.brutMonthly ?? ''}
-                  onChange={(e) => updateSocialeEmployee('brutMonthly', parseNumber(e.target.value))}
+                  value={employee.grossMonthly ?? employee.brutMonthly ?? ''}
+                  onChange={(e) => {
+                    const val = parseNumber(e.target.value);
+                    updateSocialeEmployee('grossMonthly', val);
+                    updateSocialeEmployee('brutMonthly', val);
+                  }}
                 />
               </div>
               <div>
@@ -604,18 +612,46 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
           )}
         </div>
 
-        {/* Impôt sur le revenu - toujours manuel */}
+        {/* Impôt sur le revenu (IR) */}
         <div className="mb-6 p-4 bg-muted/30 rounded-lg">
-          <p className="text-xs text-muted-foreground mb-2">Impôt sur le revenu (saisie manuelle)</p>
-          <div className="w-1/2">
-            <Label htmlFor="ir">IR mensuel (€)</Label>
-            <Input
-              id="ir"
-              type="text"
-              value={inputs.sociale.impotRevenu ?? ''}
-              onChange={(e) => updateSociale('impotRevenu', parseNumber(e.target.value))}
-            />
-          </div>
+          <ModeToggle
+            mode={automation.irMode?.mode ?? 'auto'}
+            onToggle={(m) => updateAutomationMode('irMode', m)}
+            label="Impôt sur le revenu (IR / PAS)"
+          />
+          
+          {(automation.irMode?.mode ?? 'auto') === 'auto' ? (
+            <div className="w-1/2">
+              <Label htmlFor="pasRate">Taux PAS (%)</Label>
+              <Input
+                id="pasRate"
+                type="text"
+                placeholder="Ex: 12"
+                value={employee.pasRate !== null ? (employee.pasRate * 100).toString() : ''}
+                onChange={(e) => {
+                  const val = parseNumber(e.target.value);
+                  updateSocialeEmployee('pasRate', val !== null ? val / 100 : null);
+                }}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Taux de prélèvement à la source (0-50%)
+              </p>
+            </div>
+          ) : (
+            <div className="w-1/2">
+              <Label htmlFor="irManual">IR mensuel (€)</Label>
+              <Input
+                id="irManual"
+                type="text"
+                value={employee.irMonthlyManual ?? inputs.sociale.impotRevenu ?? ''}
+                onChange={(e) => {
+                  const val = parseNumber(e.target.value);
+                  updateSocialeEmployee('irMonthlyManual', val);
+                  updateSociale('impotRevenu', val);
+                }}
+              />
+            </div>
+          )}
         </div>
         
         {/* Impôt sur les sociétés */}

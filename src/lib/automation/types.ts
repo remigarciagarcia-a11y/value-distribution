@@ -30,17 +30,32 @@ export interface ContributionLine {
   category: 'health' | 'retirement' | 'unemployment' | 'solidarity' | 'csg_crds' | 'other';
   baseUsed: 'brut_total' | 'brut_plafonne_pmss' | 'custom';
   rate: number;
+  /** Rate for employer portion */
+  rateEmployer: number;
+  /** Rate for employee portion */
+  rateEmployee: number;
   /** Base amount used for calculation */
   baseAmount: number | null;
-  /** Monthly value per person */
+  /** Monthly value per person (total) */
   valueMonthly: number | null;
+  /** Monthly value - employer portion */
+  valueMonthlyEmployer: number | null;
+  /** Monthly value - employee portion */
+  valueMonthlyEmployee: number | null;
   formula: string;
 }
 
 export interface SocialContributionsResult extends CalculationResult {
   lines: ContributionLine[];
+  /** Total contributions (employer + employee) monthly */
   totalMonthly: number | null;
   totalAnnual: number | null;
+  /** Employer portion only */
+  totalMonthlyEmployer: number | null;
+  /** Employee portion only */
+  totalMonthlyEmployee: number | null;
+  /** CSG/CRDS portion (always employee) */
+  csgCrdsMonthly: number | null;
 }
 
 export interface ISResult extends CalculationResult {
@@ -63,11 +78,39 @@ export interface VATResult extends CalculationResult {
   purchasesBreakdown: { rate: number; baseHT: number; vatAmount: number }[];
 }
 
+// ===== EMPLOYEE SALARY RESULT =====
+
+export interface EmployeeSalaryResult {
+  /** Gross monthly salary (source of truth) */
+  grossMonthly: number | null;
+  /** Employee social contributions (excluding CSG/CRDS) */
+  employeeContribMonthly: number | null;
+  /** CSG/CRDS portion */
+  csgCrdsMonthly: number | null;
+  /** Net before income tax */
+  netBeforeIR: number | null;
+  /** Net taxable (approximation) */
+  netTaxable: number | null;
+  /** Income tax (PAS) */
+  irMonthly: number | null;
+  /** Net after income tax */
+  netAfterIR: number | null;
+  /** Calculation mode for IR */
+  irMode: 'auto' | 'manual' | 'nd';
+  /** Detailed contributions (employee side) */
+  contributions: SocialContributionsResult;
+  formula: string;
+  sources: string[];
+  assumptions: string[];
+  missingInputs: string[];
+}
+
 export interface PartSocialeAutomatedResult {
   cotisations: SocialContributionsResult;
   is: ISResult;
   vat: VATResult;
   ir: CalculationResult;
+  employee: EmployeeSalaryResult;
   total: {
     monthlyPerPerson: number | null;
     isPartial: boolean;
@@ -95,11 +138,17 @@ export interface AutomatedSettings {
 export type EmployeeStatus = 'cadre' | 'non_cadre';
 
 export interface EmployeeInputs {
-  /** Gross monthly salary */
-  brutMonthly: number | null;
-  /** Net salary after income tax (monthly) */
+  /** Gross monthly salary (source of truth) */
+  grossMonthly: number | null;
+  /** @deprecated Use grossMonthly instead */
+  brutMonthly?: number | null;
+  /** PAS rate (withholding tax rate, 0-1) */
+  pasRate: number | null;
+  /** Manual IR override (monthly) */
+  irMonthlyManual: number | null;
+  /** Net salary after income tax (monthly) - for display only */
   netAfterIrMonthly: number | null;
-  /** Income tax amount (monthly) */
+  /** Income tax amount (monthly) - calculated or manual */
   irMonthly: number | null;
   /** Employee status (affects some rates) */
   status: EmployeeStatus;
@@ -132,6 +181,8 @@ export interface CompanyInputs {
 export interface SocialAutomationConfig {
   /** Cotisations sociales mode */
   contribMode: AutomationMode;
+  /** IR (prélèvement à la source) mode */
+  irMode: AutomationMode;
   /** Impôt sur les sociétés mode */
   isMode: AutomationMode;
   /** TVA mode */
@@ -190,7 +241,10 @@ export const defaultAutomationMode: AutomationMode = {
 };
 
 export const defaultEmployeeInputs: EmployeeInputs = {
+  grossMonthly: null,
   brutMonthly: null,
+  pasRate: null,
+  irMonthlyManual: null,
   netAfterIrMonthly: null,
   irMonthly: null,
   status: 'cadre',
@@ -209,6 +263,7 @@ export const defaultCompanyInputs: CompanyInputs = {
 
 export const defaultSocialAutomationConfig: SocialAutomationConfig = {
   contribMode: { ...defaultAutomationMode },
+  irMode: { ...defaultAutomationMode },
   isMode: { ...defaultAutomationMode },
   vatMode: { ...defaultAutomationMode },
 };

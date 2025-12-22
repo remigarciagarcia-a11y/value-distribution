@@ -45,8 +45,14 @@ export interface AutoModeConfig {
 }
 
 export interface EmployeeAutomationInputs {
-  brutMonthly: number | null;
+  grossMonthly: number | null;
+  /** @deprecated Use grossMonthly instead */
+  brutMonthly?: number | null;
   status: EmployeeStatusType;
+  /** PAS rate (0-1, e.g., 0.12 for 12%) */
+  pasRate: number | null;
+  /** Manual IR override (monthly) */
+  irMonthlyManual: number | null;
 }
 
 export interface CompanyAutomationInputs {
@@ -67,6 +73,7 @@ export interface VATAutomationInputs {
 
 export interface SocialeAutomationConfig {
   cotisationsMode: AutoModeConfig;
+  irMode: AutoModeConfig;
   isMode: AutoModeConfig;
   vatMode: AutoModeConfig;
 }

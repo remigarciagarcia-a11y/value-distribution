@@ -18,6 +18,7 @@ export type {
   SocialContributionsResult,
   ISResult,
   VATResult,
+  EmployeeSalaryResult,
   PartSocialeAutomatedResult,
   PartSocialeDiagnostic,
   SocialRatesConfig,
@@ -36,6 +37,7 @@ export {
 // Calculators
 export { computeDivisor, annualToMonthlyPerPerson, monthlyToAnnual, monthlyPerPersonToAnnual } from './calculators/divisor';
 export { computeSocialContributions, aggregateContributionsByCategory } from './calculators/socialContributions';
+export { computeEmployeeSalary } from './calculators/employeeSalary';
 export { computeIS } from './calculators/corporateTax';
 export { computeVAT, FRENCH_VAT_RATES } from './calculators/vat';
 export { computePartSociale, toPartSocialeVM } from './calculators/partSociale';
