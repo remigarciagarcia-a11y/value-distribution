@@ -1,4 +1,4 @@
-import { Euro, Building2, Heart, User, Palmtree } from 'lucide-react';
+import { Euro, Building2, Heart, User } from 'lucide-react';
 import type { BulletinViewModel } from '@/lib/types';
 import { formatPctND } from '@/lib/types';
 
@@ -80,12 +80,6 @@ export function StackedBar({ viewModel }: StackedBarProps) {
           </span>
         </div>
       )}
-      
-      {/* Congés section at bottom */}
-      <div className="h-14 bg-blue-300 flex flex-col items-center justify-center border-t border-blue-400/50">
-        <Palmtree className="w-4 h-4 text-primary-foreground opacity-80" />
-        <span className="text-[10px] text-primary-foreground font-medium mt-0.5">Congés</span>
-      </div>
     </div>
   );
 }
