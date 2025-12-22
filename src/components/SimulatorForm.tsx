@@ -4,8 +4,8 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Trash2, FileText } from 'lucide-react';
-import type { SimulatorInputs, PrimeOuAvantage } from '@/lib/types';
+import { Plus, Trash2, FileText, Zap, PenLine } from 'lucide-react';
+import type { SimulatorInputs, PrimeOuAvantage, VATLineInput, AutoModeType, EmployeeStatusType } from '@/lib/types';
 import { scenarios } from '@/lib/defaultData';
 
 interface SimulatorFormProps {
@@ -44,10 +44,43 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
     });
   };
   
-  const updateSociale = (field: keyof SimulatorInputs['sociale'], value: number | null) => {
+  const updateSociale = (field: keyof SimulatorInputs['sociale'], value: unknown) => {
     onChange({
       ...inputs,
       sociale: { ...inputs.sociale, [field]: value },
+    });
+  };
+  
+  const updateSocialeEmployee = (field: keyof SimulatorInputs['sociale']['employee'], value: unknown) => {
+    onChange({
+      ...inputs,
+      sociale: {
+        ...inputs.sociale,
+        employee: { ...inputs.sociale.employee, [field]: value },
+      },
+    });
+  };
+  
+  const updateSocialeCompany = (field: keyof SimulatorInputs['sociale']['company'], value: unknown) => {
+    onChange({
+      ...inputs,
+      sociale: {
+        ...inputs.sociale,
+        company: { ...inputs.sociale.company, [field]: value },
+      },
+    });
+  };
+  
+  const updateAutomationMode = (component: 'cotisationsMode' | 'isMode' | 'vatMode', mode: AutoModeType) => {
+    onChange({
+      ...inputs,
+      sociale: {
+        ...inputs.sociale,
+        automation: {
+          ...inputs.sociale.automation,
+          [component]: { ...inputs.sociale.automation[component], mode },
+        },
+      },
     });
   };
   
@@ -95,6 +128,62 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
       p.id === id ? { ...p, [field]: value } : p
     ));
   };
+  
+  // VAT line helpers
+  const addVATLine = (type: 'sales' | 'purchases') => {
+    const newLine: VATLineInput = {
+      id: Date.now().toString(),
+      rate: 0.20,
+      baseHTAnnual: null,
+    };
+    updateSociale('vat', {
+      ...inputs.sociale.vat,
+      [type]: [...inputs.sociale.vat[type], newLine],
+    });
+  };
+  
+  const removeVATLine = (type: 'sales' | 'purchases', id: string) => {
+    updateSociale('vat', {
+      ...inputs.sociale.vat,
+      [type]: inputs.sociale.vat[type].filter(l => l.id !== id),
+    });
+  };
+  
+  const updateVATLine = (type: 'sales' | 'purchases', id: string, field: 'rate' | 'baseHTAnnual', value: number | null) => {
+    updateSociale('vat', {
+      ...inputs.sociale.vat,
+      [type]: inputs.sociale.vat[type].map(l =>
+        l.id === id ? { ...l, [field]: value } : l
+      ),
+    });
+  };
+
+  // Mode toggle component
+  const ModeToggle = ({ 
+    mode, 
+    onToggle, 
+    label 
+  }: { 
+    mode: AutoModeType; 
+    onToggle: (mode: AutoModeType) => void;
+    label: string;
+  }) => (
+    <div className="flex items-center gap-2 mb-2">
+      <span className="text-xs text-muted-foreground flex-1">{label}</span>
+      <button
+        type="button"
+        onClick={() => onToggle(mode === 'auto' ? 'manual' : 'auto')}
+        className={`flex items-center gap-1 px-2 py-1 rounded text-xs font-medium transition-colors ${
+          mode === 'auto' 
+            ? 'bg-primary/10 text-primary' 
+            : 'bg-muted text-muted-foreground'
+        }`}
+      >
+        {mode === 'auto' ? <Zap className="w-3 h-3" /> : <PenLine className="w-3 h-3" />}
+        {mode === 'auto' ? 'Auto' : 'Manuel'}
+      </button>
+    </div>
+  );
   
   return (
     <div className="h-full overflow-y-auto p-6 space-y-6">
@@ -386,63 +475,112 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
         </div>
       </section>
       
-      {/* Sociale */}
+      {/* Sociale - AUTOMATISATION */}
       <section className="form-section">
-        <h3 className="font-semibold text-sm text-primary mb-4">Part Sociale (mensuel € / personne)</h3>
+        <h3 className="font-semibold text-sm text-primary mb-4">Part Sociale</h3>
         
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="sante">Santé</Label>
-            <Input
-              id="sante"
-              type="text"
-              value={inputs.sociale.sante ?? ''}
-              onChange={(e) => updateSociale('sante', parseNumber(e.target.value))}
-            />
-          </div>
+        {/* Cotisations sociales */}
+        <div className="mb-6 p-4 bg-muted/30 rounded-lg">
+          <ModeToggle
+            mode={inputs.sociale.automation.cotisationsMode.mode}
+            onToggle={(m) => updateAutomationMode('cotisationsMode', m)}
+            label="Cotisations sociales"
+          />
           
-          <div>
-            <Label htmlFor="retraite">Retraite</Label>
-            <Input
-              id="retraite"
-              type="text"
-              value={inputs.sociale.retraite ?? ''}
-              onChange={(e) => updateSociale('retraite', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="chomage">Chômage</Label>
-            <Input
-              id="chomage"
-              type="text"
-              value={inputs.sociale.chomage ?? ''}
-              onChange={(e) => updateSociale('chomage', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="solidarite">Solidarité / famille</Label>
-            <Input
-              id="solidarite"
-              type="text"
-              value={inputs.sociale.solidarite ?? ''}
-              onChange={(e) => updateSociale('solidarite', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="csg">CSG / CRDS</Label>
-            <Input
-              id="csg"
-              type="text"
-              value={inputs.sociale.csgCrds ?? ''}
-              onChange={(e) => updateSociale('csgCrds', parseNumber(e.target.value))}
-            />
-          </div>
-          
-          <div>
-            <Label htmlFor="ir">Impôt sur le revenu</Label>
+          {inputs.sociale.automation.cotisationsMode.mode === 'auto' ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="brutMonthly">Salaire brut mensuel (€)</Label>
+                <Input
+                  id="brutMonthly"
+                  type="text"
+                  placeholder="Ex: 4 500"
+                  value={inputs.sociale.employee.brutMonthly ?? ''}
+                  onChange={(e) => updateSocialeEmployee('brutMonthly', parseNumber(e.target.value))}
+                />
+              </div>
+              <div>
+                <Label>Statut</Label>
+                <div className="flex gap-4 mt-2">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="employeeStatus"
+                      checked={inputs.sociale.employee.status === 'cadre'}
+                      onChange={() => updateSocialeEmployee('status', 'cadre' as EmployeeStatusType)}
+                      className="accent-primary"
+                    />
+                    Cadre
+                  </label>
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="employeeStatus"
+                      checked={inputs.sociale.employee.status === 'non_cadre'}
+                      onChange={() => updateSocialeEmployee('status', 'non_cadre' as EmployeeStatusType)}
+                      className="accent-primary"
+                    />
+                    Non-cadre
+                  </label>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="sante">Santé (€/mois)</Label>
+                <Input
+                  id="sante"
+                  type="text"
+                  value={inputs.sociale.sante ?? ''}
+                  onChange={(e) => updateSociale('sante', parseNumber(e.target.value))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="retraite">Retraite (€/mois)</Label>
+                <Input
+                  id="retraite"
+                  type="text"
+                  value={inputs.sociale.retraite ?? ''}
+                  onChange={(e) => updateSociale('retraite', parseNumber(e.target.value))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="chomage">Chômage (€/mois)</Label>
+                <Input
+                  id="chomage"
+                  type="text"
+                  value={inputs.sociale.chomage ?? ''}
+                  onChange={(e) => updateSociale('chomage', parseNumber(e.target.value))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="solidarite">Solidarité (€/mois)</Label>
+                <Input
+                  id="solidarite"
+                  type="text"
+                  value={inputs.sociale.solidarite ?? ''}
+                  onChange={(e) => updateSociale('solidarite', parseNumber(e.target.value))}
+                />
+              </div>
+              <div>
+                <Label htmlFor="csg">CSG/CRDS (€/mois)</Label>
+                <Input
+                  id="csg"
+                  type="text"
+                  value={inputs.sociale.csgCrds ?? ''}
+                  onChange={(e) => updateSociale('csgCrds', parseNumber(e.target.value))}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Impôt sur le revenu - toujours manuel */}
+        <div className="mb-6 p-4 bg-muted/30 rounded-lg">
+          <p className="text-xs text-muted-foreground mb-2">Impôt sur le revenu (saisie manuelle)</p>
+          <div className="w-1/2">
+            <Label htmlFor="ir">IR mensuel (€)</Label>
             <Input
               id="ir"
               type="text"
@@ -450,6 +588,157 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
               onChange={(e) => updateSociale('impotRevenu', parseNumber(e.target.value))}
             />
           </div>
+        </div>
+        
+        {/* Impôt sur les sociétés */}
+        <div className="mb-6 p-4 bg-muted/30 rounded-lg">
+          <ModeToggle
+            mode={inputs.sociale.automation.isMode.mode}
+            onToggle={(m) => updateAutomationMode('isMode', m)}
+            label="Impôt sur les sociétés (IS)"
+          />
+          
+          {inputs.sociale.automation.isMode.mode === 'auto' ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="taxableProfit">Bénéfice imposable annuel (€)</Label>
+                <Input
+                  id="taxableProfit"
+                  type="text"
+                  placeholder="Ex: 150 000"
+                  value={inputs.sociale.company.taxableProfitAnnual ?? ''}
+                  onChange={(e) => updateSocialeCompany('taxableProfitAnnual', parseNumber(e.target.value))}
+                />
+              </div>
+              <div className="flex items-center gap-2 mt-6">
+                <Switch
+                  id="reducedRate"
+                  checked={inputs.sociale.company.isReducedRateEnabled}
+                  onCheckedChange={(checked) => updateSocialeCompany('isReducedRateEnabled', checked)}
+                />
+                <Label htmlFor="reducedRate" className="text-sm">Taux réduit PME (15%)</Label>
+              </div>
+            </div>
+          ) : (
+            <div className="w-1/2">
+              <Label htmlFor="isManual">IS annuel (€)</Label>
+              <Input
+                id="isManual"
+                type="text"
+                value={inputs.sociale.impotSocietes ?? ''}
+                onChange={(e) => updateSociale('impotSocietes', parseNumber(e.target.value))}
+              />
+            </div>
+          )}
+        </div>
+        
+        {/* TVA */}
+        <div className="p-4 bg-muted/30 rounded-lg">
+          <ModeToggle
+            mode={inputs.sociale.automation.vatMode.mode}
+            onToggle={(m) => updateAutomationMode('vatMode', m)}
+            label="TVA nette reversée"
+          />
+          
+          {inputs.sociale.automation.vatMode.mode === 'auto' ? (
+            <div className="space-y-4">
+              {/* Ventes */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-xs">Ventes (TVA collectée)</Label>
+                  <Button variant="ghost" size="sm" onClick={() => addVATLine('sales')}>
+                    <Plus className="w-3 h-3 mr-1" />
+                    Ajouter
+                  </Button>
+                </div>
+                {inputs.sociale.vat.sales.map(line => (
+                  <div key={line.id} className="flex gap-2 mb-2">
+                    <select
+                      value={line.rate}
+                      onChange={(e) => updateVATLine('sales', line.id, 'rate', parseFloat(e.target.value))}
+                      className="w-24 px-2 py-1.5 text-sm border rounded-md bg-background"
+                    >
+                      <option value={0.20}>20%</option>
+                      <option value={0.10}>10%</option>
+                      <option value={0.055}>5.5%</option>
+                      <option value={0.021}>2.1%</option>
+                    </select>
+                    <Input
+                      type="text"
+                      placeholder="CA HT annuel"
+                      value={line.baseHTAnnual ?? ''}
+                      onChange={(e) => updateVATLine('sales', line.id, 'baseHTAnnual', parseNumber(e.target.value))}
+                      className="flex-1"
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => removeVATLine('sales', line.id)}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+                {inputs.sociale.vat.sales.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic">Aucune ligne de vente</p>
+                )}
+              </div>
+              
+              {/* Achats */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-xs">Achats (TVA déductible)</Label>
+                  <Button variant="ghost" size="sm" onClick={() => addVATLine('purchases')}>
+                    <Plus className="w-3 h-3 mr-1" />
+                    Ajouter
+                  </Button>
+                </div>
+                {inputs.sociale.vat.purchases.map(line => (
+                  <div key={line.id} className="flex gap-2 mb-2">
+                    <select
+                      value={line.rate}
+                      onChange={(e) => updateVATLine('purchases', line.id, 'rate', parseFloat(e.target.value))}
+                      className="w-24 px-2 py-1.5 text-sm border rounded-md bg-background"
+                    >
+                      <option value={0.20}>20%</option>
+                      <option value={0.10}>10%</option>
+                      <option value={0.055}>5.5%</option>
+                      <option value={0.021}>2.1%</option>
+                    </select>
+                    <Input
+                      type="text"
+                      placeholder="Achats HT annuel"
+                      value={line.baseHTAnnual ?? ''}
+                      onChange={(e) => updateVATLine('purchases', line.id, 'baseHTAnnual', parseNumber(e.target.value))}
+                      className="flex-1"
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => removeVATLine('purchases', line.id)}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+                {inputs.sociale.vat.purchases.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic">Aucune ligne d'achat</p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="w-1/2">
+              <Label htmlFor="vatManual">TVA nette annuelle (€)</Label>
+              <Input
+                id="vatManual"
+                type="text"
+                placeholder="TVA collectée - TVA déductible"
+                value={inputs.sociale.automation.vatMode.manualValue ?? ''}
+                onChange={(e) => onChange({
+                  ...inputs,
+                  sociale: {
+                    ...inputs.sociale,
+                    automation: {
+                      ...inputs.sociale.automation,
+                      vatMode: { ...inputs.sociale.automation.vatMode, manualValue: parseNumber(e.target.value) },
+                    },
+                  },
+                })}
+              />
+            </div>
+          )}
         </div>
       </section>
       
