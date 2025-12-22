@@ -368,16 +368,6 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                 rows={2}
               />
             </div>
-            
-            <div>
-              <Label htmlFor="mois">Période affichée</Label>
-              <Input
-                id="mois"
-                value={inputs.salarie.moisAffiche}
-                onChange={(e) => updateSalarie('moisAffiche', e.target.value)}
-                placeholder="Ex: Décembre 2025"
-              />
-            </div>
           </div>
         )}
       </section>
