@@ -1,0 +1,77 @@
+{
+  "description": "Exemple de sortie Part Sociale automatisée",
+  "inputs": {
+    "settings": {
+      "year": 2025,
+      "divisorMode": "HEADCOUNT",
+      "headcount": 10,
+      "fte": null
+    },
+    "employee": {
+      "brutMonthly": 4500,
+      "status": "cadre",
+      "irMonthly": 350
+    },
+    "company": {
+      "taxableProfitAnnual": 150000,
+      "isReducedRateEnabled": true,
+      "vatSales": [
+        { "rate": 0.20, "baseHTAnnual": 1000000 }
+      ],
+      "vatPurchases": [
+        { "rate": 0.20, "baseHTAnnual": 400000 }
+      ]
+    },
+    "automation": {
+      "contribMode": { "mode": "auto" },
+      "isMode": { "mode": "auto" },
+      "vatMode": { "mode": "auto" }
+    }
+  },
+  "output": {
+    "cotisations": {
+      "totalMonthly": 2847.52,
+      "totalAnnual": 34170.24,
+      "lines": [
+        { "label": "Assurance maladie-maternité", "category": "health", "valueMonthly": 585.00, "rate": 0.13 },
+        { "label": "Retraite base (plafonnée)", "category": "retirement", "valueMonthly": 606.41, "rate": 0.1545 },
+        { "label": "Retraite base (déplafonnée)", "category": "retirement", "valueMonthly": 112.50, "rate": 0.025 },
+        { "label": "AGIRC-ARRCO T1", "category": "retirement", "valueMonthly": 308.87, "rate": 0.0787 },
+        { "label": "Assurance chômage", "category": "unemployment", "valueMonthly": 159.01, "rate": 0.0405 },
+        { "label": "Allocations familiales", "category": "solidarity", "valueMonthly": 155.25, "rate": 0.0345 },
+        { "label": "CSG déductible", "category": "csg_crds", "valueMonthly": 300.47, "rate": 0.068 },
+        { "label": "CSG non déductible", "category": "csg_crds", "valueMonthly": 106.04, "rate": 0.024 },
+        { "label": "CRDS", "category": "csg_crds", "valueMonthly": 22.09, "rate": 0.005 }
+      ],
+      "formula": "Cotisations sociales (cadre) = 2847.52 €/mois",
+      "sources": ["Barème cotisations 2025", "PMSS 2025: 3 925 €/mois"],
+      "assumptions": ["Taux standards sans réduction Fillon"]
+    },
+    "is": {
+      "annual": 33187.50,
+      "monthlyPerPerson": 276.56,
+      "tranches": [
+        { "label": "Tranche réduite (0 - 42 500 €)", "base": 42500, "rate": 0.15, "amount": 6375 },
+        { "label": "Tranche normale (> 42 500 €)", "base": 107500, "rate": 0.25, "amount": 26875 }
+      ],
+      "formula": "IS = (42 500 € × 15%) + (107 500 € × 25%) = 33 187,50 €"
+    },
+    "vat": {
+      "collectedAnnual": 200000,
+      "deductibleAnnual": 80000,
+      "netAnnual": 120000,
+      "netMonthlyPerPerson": 1000,
+      "formula": "TVA nette = 200 000 € (collectée) - 80 000 € (déductible) = 120 000 €"
+    },
+    "ir": {
+      "value": 350,
+      "formula": "IR = 350 €/mois (saisie manuelle)"
+    },
+    "total": {
+      "monthlyPerPerson": 4474.08,
+      "isPartial": false,
+      "formula": "Part Sociale = Cotisations: 2847.52 € + IR: 350 € + IS: 276.56 € + TVA: 1000 € = 4474.08 €/mois"
+    },
+    "diagnostics": []
+  }
+}
