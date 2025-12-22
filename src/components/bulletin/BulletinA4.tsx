@@ -60,6 +60,13 @@ export function BulletinA4({ viewModel }: BulletinA4Props) {
   
   const hasOverflow = stackedBar.overflowPct !== null && stackedBar.overflowPct > 0;
   
+  // Calculate the sum of all parts and the gap
+  const sumOfParts = (parts.capital.total.total ?? 0) + 
+                     (parts.fonctionnelle.total.total ?? 0) + 
+                     (parts.sociale.total.total ?? 0) + 
+                     (parts.personnelle.total.total ?? 0);
+  const gapValue = vp.value !== null ? sumOfParts - vp.value : null;
+  
   return (
     <div className="bg-card shadow-document rounded-lg overflow-hidden" style={{ width: '210mm', minHeight: '297mm' }}>
       <div className="relative">
@@ -98,7 +105,10 @@ export function BulletinA4({ viewModel }: BulletinA4Props) {
                 {hasOverflow && (
                   <p className="mt-2 text-xs text-red-600 font-medium flex items-center gap-1">
                     <span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>
-                    Dépassement de {stackedBar.overflowPct?.toFixed(1)}% — La somme des parts dépasse la valeur produite
+                    Dépassement de {stackedBar.overflowPct?.toFixed(1)}% 
+                    {gapValue !== null && <span className="font-bold ml-1">({gapValue > 0 ? '+' : ''}{formatCurrencyCompact(gapValue)})</span>}
+                    <span className="mx-1">—</span>
+                    La somme des parts dépasse la valeur produite
                   </p>
                 )}
               </div>
