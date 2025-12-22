@@ -1,6 +1,7 @@
 // Default data and example scenarios for the simulator
 
 import type { SimulatorInputs, SocialeInputs } from './types';
+import { loadScenarios } from './scenarios';
 
 // Default automation config for Part Sociale
 const defaultSocialeAutomation: Pick<SocialeInputs, 'employee' | 'company' | 'vat' | 'automation'> = {
@@ -244,8 +245,10 @@ export const exampleScenario2: SimulatorInputs = {
   mode: 'simple',
 };
 
+// Load scenarios from JSON and add the empty scenario
+const jsonScenarios = loadScenarios();
+
 export const scenarios = [
   { id: 'empty', label: 'Vide', data: emptyInputs },
-  { id: 'example1', label: 'Exemple PME Tech', data: exampleScenario1 },
-  { id: 'example2', label: 'Exemple Startup R&D', data: exampleScenario2 },
+  ...jsonScenarios,
 ];
