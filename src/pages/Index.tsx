@@ -89,6 +89,13 @@ const Index = () => {
         </Helmet>
         
         <div className="min-h-screen bg-background flex flex-col">
+          {/* Mobile optimization banner */}
+          <div className="bg-primary/10 border-b border-primary/20 px-3 py-2 text-center">
+            <p className="text-xs text-primary">
+              📱 Cette application est optimisée pour une vue desktop
+            </p>
+          </div>
+          
           {/* Mobile Header */}
           <header className="sticky top-0 z-20 flex-shrink-0 p-3 flex justify-between items-center border-b bg-background/95 backdrop-blur-sm">
             <h1 className="text-sm font-semibold text-primary truncate">Relevé de contribution</h1>
