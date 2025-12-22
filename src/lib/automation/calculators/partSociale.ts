@@ -1,6 +1,6 @@
 // ============================================
 // PART SOCIALE AGGREGATOR
-// Combines all social components
+// Combines all social components using V1 engine
 // ============================================
 
 import type {
@@ -10,6 +10,8 @@ import type {
   CalculationResult,
   SocialRatesConfig,
   EmployeeSalaryResult,
+  SocialContributionsResult,
+  ContributionLine,
 } from '../types';
 import { computeDivisor, annualToMonthlyPerPerson } from './divisor';
 import { computeSocialContributions, aggregateContributionsByCategory } from './socialContributions';
@@ -17,15 +19,282 @@ import { computeEmployeeSalary } from './employeeSalary';
 import { computeIS } from './corporateTax';
 import { computeVAT } from './vat';
 
-// Import default rates
+// Import the new V1 engine
+import {
+  computePartSocialeV1,
+  type PartSocialeV1Inputs,
+  type SocialSettings,
+  type EmployeeInputs as EngineEmployeeInputs,
+  type CompanyInputs as EngineCompanyInputs,
+} from '../engine';
+
+// Import legacy rates for fallback
 import ratesFr2025 from '../rates/fr/2025/social.json';
 
 /**
- * Compute the complete Part Sociale
+ * Convert automation inputs to V1 engine inputs
+ */
+function toEngineInputs(inputs: PartSocialeAutomationInputs): PartSocialeV1Inputs {
+  const { settings, employee, company, automation } = inputs;
+  
+  // Build period date from year (default to current month)
+  const now = new Date();
+  const periodDate = `${settings.year}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+  
+  const engineSettings: SocialSettings = {
+    year: settings.year,
+    divisorMode: settings.divisorMode,
+    headcount: settings.headcount,
+    fte: settings.fte,
+    periodDate,
+  };
+  
+  const grossMonthly = employee.grossMonthly ?? employee.brutMonthly ?? null;
+  
+  const engineEmployee: EngineEmployeeInputs = {
+    grossMonthly: grossMonthly ?? 0,
+    isCadre: employee.status === 'cadre',
+    irMonthly: automation.irMode.mode === 'manual' 
+      ? (automation.irMode.manualValueMonthly ?? employee.irMonthlyManual ?? employee.irMonthly ?? undefined)
+      : undefined,
+    accidentAtMpRate: 0.0125, // Default AT/MP rate
+  };
+  
+  const engineCompany: EngineCompanyInputs = {
+    companyHeadcount: settings.headcount ?? 1,
+    taxableProfitAnnual: company.taxableProfitAnnual,
+    isReducedRateEnabled: company.isReducedRateEnabled,
+    vat: {
+      sales: company.vatSales.map(s => ({ rate: s.rate, baseHTAnnual: s.baseHTAnnual })),
+      purchases: company.vatPurchases.map(p => ({ rate: p.rate, baseHTAnnual: p.baseHTAnnual })),
+    },
+  };
+  
+  return {
+    settings: engineSettings,
+    employee: engineEmployee,
+    company: engineCompany,
+  };
+}
+
+/**
+ * Convert V1 engine social result to legacy ContributionLine format
+ */
+function engineLinesToContributionLines(lines: Array<{
+  id: string;
+  label: string;
+  base: number;
+  employeeAmount: number;
+  employerAmount: number;
+  totalAmount: number;
+  status: string;
+  formula: string;
+}>): ContributionLine[] {
+  // Map engine contribution IDs to categories
+  const categoryMap: Record<string, ContributionLine['category']> = {
+    'maladie_employer': 'health',
+    'vieillesse_plafonnee': 'retirement',
+    'vieillesse_deplafonnee': 'retirement',
+    'agirc_arrco_t1': 'retirement',
+    'agirc_arrco_t2': 'retirement',
+    'ceg_t1': 'retirement',
+    'ceg_t2': 'retirement',
+    'cet': 'retirement',
+    'assurance_chomage': 'unemployment',
+    'ags': 'unemployment',
+    'apec': 'unemployment',
+    'allocations_familiales': 'solidarity',
+    'fnal': 'solidarity',
+    'csa': 'solidarity',
+    'at_mp': 'health',
+    'csg': 'csg_crds',
+    'crds': 'csg_crds',
+  };
+
+  return lines
+    .filter(line => line.status === 'active')
+    .map(line => ({
+      label: line.label,
+      category: categoryMap[line.id] ?? 'other',
+      baseUsed: 'brut_total' as const,
+      rate: line.base > 0 ? line.totalAmount / line.base : 0,
+      rateEmployer: line.base > 0 ? line.employerAmount / line.base : 0,
+      rateEmployee: line.base > 0 ? line.employeeAmount / line.base : 0,
+      baseAmount: line.base,
+      valueMonthly: line.totalAmount,
+      valueMonthlyEmployer: line.employerAmount,
+      valueMonthlyEmployee: line.employeeAmount,
+      formula: line.formula,
+    }));
+}
+
+/**
+ * Compute the complete Part Sociale using the V1 engine
  * 
  * Part Sociale = Cotisations sociales + IR + IS + TVA nette
  */
 export function computePartSociale(
+  inputs: PartSocialeAutomationInputs,
+  ratesConfig: SocialRatesConfig = ratesFr2025 as SocialRatesConfig
+): PartSocialeAutomatedResult {
+  const diagnostics: PartSocialeDiagnostic[] = [];
+
+  // Check if we should use V1 engine (auto mode for contributions)
+  const useV1Engine = inputs.automation.contribMode.mode === 'auto';
+  
+  if (useV1Engine) {
+    // Use V1 engine with new JSON rates
+    const engineInputs = toEngineInputs(inputs);
+    const v1Result = computePartSocialeV1(engineInputs);
+    
+    // Convert engine diagnostics
+    for (const warning of v1Result.diagnostics.warnings) {
+      diagnostics.push({
+        type: 'warning',
+        code: 'ENGINE_WARNING',
+        message: warning,
+      });
+    }
+    
+    for (const missing of v1Result.diagnostics.missingInputs) {
+      diagnostics.push({
+        type: 'warning',
+        code: 'MISSING_INPUT',
+        message: `Donnée manquante: ${missing}`,
+        field: missing,
+      });
+    }
+    
+    // Convert social contributions result
+    const contributionLines = engineLinesToContributionLines(v1Result.social.lines);
+    
+    // Calculate totals from lines
+    let totalMonthlyEmployer = 0;
+    let totalMonthlyEmployee = 0;
+    let csgCrdsMonthly = 0;
+    
+    for (const line of contributionLines) {
+      totalMonthlyEmployer += line.valueMonthlyEmployer ?? 0;
+      totalMonthlyEmployee += line.valueMonthlyEmployee ?? 0;
+      if (line.category === 'csg_crds') {
+        csgCrdsMonthly += line.valueMonthlyEmployee ?? 0;
+      }
+    }
+    
+    const cotisations: SocialContributionsResult = {
+      value: v1Result.social.totals.socialContribFusionMonthly,
+      totalMonthly: v1Result.social.totals.socialContribFusionMonthly,
+      totalAnnual: v1Result.social.totals.socialContribFusionMonthly * 12,
+      totalMonthlyEmployer,
+      totalMonthlyEmployee,
+      csgCrdsMonthly: v1Result.social.totals.csgCrdsMonthly,
+      lines: contributionLines,
+      formula: `Cotisations V1 = ${v1Result.social.totals.socialContribFusionMonthly.toFixed(2)} €/mois`,
+      sources: ['Barème France 2025 (JSON complet)'],
+      assumptions: ['Calcul dynamique avec évaluateur sécurisé'],
+      missingInputs: v1Result.diagnostics.missingInputs,
+    };
+    
+    // Build IS result
+    const is = {
+      value: v1Result.is.isAnnual,
+      annual: v1Result.is.isAnnual,
+      monthlyPerPerson: v1Result.is.isMonthlyPerPerson,
+      tranches: [] as { label: string; base: number; rate: number; amount: number }[],
+      formula: v1Result.is.isAnnual !== null 
+        ? `IS = ${v1Result.is.isAnnual.toFixed(2)} € annuel`
+        : 'IS = ND',
+      sources: ['Barème IS 2025'],
+      assumptions: [],
+      missingInputs: v1Result.is.diagnostics.missingInputs,
+    };
+    
+    // Build VAT result
+    const vat = {
+      value: v1Result.vat.vatNetAnnual,
+      collectedAnnual: v1Result.vat.vatCollectedAnnual,
+      deductibleAnnual: v1Result.vat.vatDeductibleAnnual,
+      netAnnual: v1Result.vat.vatNetAnnual,
+      netMonthlyPerPerson: v1Result.vat.vatNetMonthlyPerPerson,
+      salesBreakdown: [] as { rate: number; baseHT: number; vatAmount: number }[],
+      purchasesBreakdown: [] as { rate: number; baseHT: number; vatAmount: number }[],
+      formula: v1Result.vat.vatNetAnnual !== null
+        ? `TVA nette = ${v1Result.vat.vatNetAnnual.toFixed(2)} € annuel`
+        : 'TVA = ND',
+      sources: ['Taux TVA France 2025'],
+      assumptions: [],
+      missingInputs: v1Result.vat.diagnostics.missingInputs,
+    };
+    
+    // Build IR result
+    const ir: CalculationResult = {
+      value: v1Result.irMonthly,
+      formula: v1Result.irMonthly !== null 
+        ? `IR = ${v1Result.irMonthly.toFixed(2)} €/mois`
+        : 'IR = ND (taux PAS manquant)',
+      sources: v1Result.irMonthly !== null ? ['Saisie manuelle'] : [],
+      assumptions: v1Result.irMonthly === null ? ['IR non calculable en V1: saisie manuelle requise'] : [],
+      missingInputs: v1Result.irMonthly === null ? ['employee.irMonthly'] : [],
+    };
+    
+    // Build employee result (simplified for V1)
+    const grossMonthly = inputs.employee.grossMonthly ?? inputs.employee.brutMonthly ?? null;
+    const netBeforeIR = grossMonthly !== null 
+      ? grossMonthly - totalMonthlyEmployee - csgCrdsMonthly
+      : null;
+    const netAfterIR = netBeforeIR !== null && v1Result.irMonthly !== null
+      ? netBeforeIR - v1Result.irMonthly
+      : null;
+    
+    const employee: EmployeeSalaryResult = {
+      grossMonthly,
+      employeeContribMonthly: totalMonthlyEmployee,
+      csgCrdsMonthly,
+      netBeforeIR,
+      netTaxable: netBeforeIR, // Approximation
+      irMonthly: v1Result.irMonthly,
+      netAfterIR,
+      irMode: v1Result.irMonthly !== null ? 'manual' : 'nd',
+      contributions: cotisations,
+      formula: netAfterIR !== null 
+        ? `Net après IR = ${netAfterIR.toFixed(2)} €/mois`
+        : 'Net après IR = ND',
+      sources: ['Calcul V1'],
+      assumptions: [],
+      missingInputs: [],
+    };
+    
+    // Calculate total
+    const totalMonthly = v1Result.totals.partSocialeTotalMonthly;
+    const isPartial = v1Result.totals.irMonthly === null || 
+                      v1Result.totals.isMonthlyPerPerson === null ||
+                      v1Result.totals.vatNetMonthlyPerPerson === null;
+    
+    return {
+      cotisations,
+      is,
+      vat,
+      ir,
+      employee,
+      total: {
+        monthlyPerPerson: totalMonthly,
+        isPartial,
+        formula: totalMonthly !== null
+          ? `Part Sociale V1 = ${totalMonthly.toFixed(2)} €/mois`
+          : 'Part Sociale = ND (données insuffisantes)',
+      },
+      diagnostics,
+    };
+  }
+
+  // Fallback to legacy calculation
+  return computePartSocialeLegacy(inputs, ratesConfig);
+}
+
+/**
+ * Legacy computation (original implementation)
+ */
+function computePartSocialeLegacy(
   inputs: PartSocialeAutomationInputs,
   ratesConfig: SocialRatesConfig = ratesFr2025 as SocialRatesConfig
 ): PartSocialeAutomatedResult {
