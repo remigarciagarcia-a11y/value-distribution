@@ -50,14 +50,14 @@ const Index = () => {
         <meta name="description" content="Simulez votre relevé de contribution mensuel et visualisez la répartition de la valeur produite entre capital, fonctionnement, social et personnel." />
       </Helmet>
       
-      <div className="min-h-screen bg-background flex">
+      <div className="h-screen bg-background flex overflow-hidden">
         {/* Left Panel - Form */}
         <aside 
-          className={`border-r bg-secondary/30 flex-shrink-0 h-screen overflow-hidden transition-all duration-300 ease-in-out ${
+          className={`border-r bg-secondary/30 flex-shrink-0 h-screen transition-all duration-300 ease-in-out ${
             sidebarOpen ? 'w-[420px]' : 'w-0'
           }`}
         >
-          <div className={`w-[420px] h-full ${sidebarOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
+          <div className={`w-[420px] h-full overflow-y-auto ${sidebarOpen ? 'opacity-100' : 'opacity-0'} transition-opacity duration-200`}>
             <SimulatorForm 
               inputs={inputs} 
               onChange={setInputs}
@@ -66,9 +66,9 @@ const Index = () => {
         </aside>
         
         {/* Right Panel - Preview */}
-        <main className="flex-1 overflow-auto p-8 bg-muted/30 relative">
+        <main className="flex-1 h-screen flex flex-col bg-muted/30 relative">
           {/* Top bar with toggle and export buttons */}
-          <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-center">
+          <div className="flex-shrink-0 p-4 flex justify-between items-center border-b bg-background/80 backdrop-blur-sm z-10">
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button
@@ -95,33 +95,36 @@ const Index = () => {
             </Button>
           </div>
           
-          {/* Diagnostics */}
-          {viewModel.diagnostics.length > 0 && (
-            <div className="mb-4 max-w-[210mm] mx-auto space-y-2">
-              {viewModel.diagnostics.map((d, i) => (
-                <div 
-                  key={i}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm ${
-                    d.type === 'warning' ? 'bg-amber-50 text-amber-800 border border-amber-200' :
-                    d.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
-                    'bg-blue-50 text-blue-800 border border-blue-200'
-                  }`}
-                >
-                  {d.type === 'warning' || d.type === 'error' ? (
-                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  ) : (
-                    <Info className="w-4 h-4 flex-shrink-0" />
-                  )}
-                  {d.message}
-                </div>
-              ))}
-            </div>
-          )}
-          
-          {/* A4 Bulletin Preview */}
-          <div className="flex justify-center">
-            <div ref={bulletinRef} className="animate-fade-in">
-              <BulletinA4 viewModel={viewModel} />
+          {/* Scrollable content area */}
+          <div className="flex-1 overflow-y-auto p-8">
+            {/* Diagnostics */}
+            {viewModel.diagnostics.length > 0 && (
+              <div className="mb-4 max-w-[210mm] mx-auto space-y-2">
+                {viewModel.diagnostics.map((d, i) => (
+                  <div 
+                    key={i}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm ${
+                      d.type === 'warning' ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+                      d.type === 'error' ? 'bg-red-50 text-red-800 border border-red-200' :
+                      'bg-blue-50 text-blue-800 border border-blue-200'
+                    }`}
+                  >
+                    {d.type === 'warning' || d.type === 'error' ? (
+                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    ) : (
+                      <Info className="w-4 h-4 flex-shrink-0" />
+                    )}
+                    {d.message}
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* A4 Bulletin Preview */}
+            <div className="flex justify-center">
+              <div ref={bulletinRef} className="animate-fade-in">
+                <BulletinA4 viewModel={viewModel} />
+              </div>
             </div>
           </div>
         </main>
