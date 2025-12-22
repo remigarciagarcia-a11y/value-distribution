@@ -97,6 +97,8 @@ export interface EmployeeSalaryResult {
   netAfterIR: number | null;
   /** Calculation mode for IR */
   irMode: 'auto' | 'manual' | 'nd';
+  /** PAS rate used for calculation (from bracket or manual input) */
+  pasRateUsed: number | null;
   /** Detailed contributions (employee side) */
   contributions: SocialContributionsResult;
   formula: string;
