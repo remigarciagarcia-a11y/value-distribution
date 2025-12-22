@@ -98,9 +98,21 @@ export function sumValues(values: (number | null)[]): { total: number | null; is
 
 // ===== PART CALCULATIONS =====
 
-export function calculatePartCapital(inputs: SimulatorInputs, vp: number | null): PartCapitalVM {
+export function calculatePartCapital(
+  inputs: SimulatorInputs, 
+  vp: number | null,
+  excessToAdd?: number | null
+): PartCapitalVM {
   const diviseur = getDiviseur(inputs);
   const { capital } = inputs;
+  
+  // Calculate base reserves value
+  let reservesValue = annualToMonthlyPerPerson(capital.reserves, diviseur);
+  
+  // Add excess (VP - sum of parts) to reserves if positive
+  if (excessToAdd !== null && excessToAdd !== undefined && excessToAdd > 0) {
+    reservesValue = (reservesValue ?? 0) + excessToAdd;
+  }
   
   const lines: LineValue[] = [
     {
@@ -111,7 +123,7 @@ export function calculatePartCapital(inputs: SimulatorInputs, vp: number | null)
     },
     {
       label: 'Réserves libres non affectées',
-      value: annualToMonthlyPerPerson(capital.reserves, diviseur),
+      value: reservesValue,
       pct: null,
       sourceFields: ['reserves'],
     },
@@ -480,11 +492,29 @@ export function calculateBulletin(inputs: SimulatorInputs): BulletinViewModel {
   const vp = vpResult.value;
   const diviseur = getDiviseur(inputs);
   
-  // Calculate all parts
-  const capital = calculatePartCapital(inputs, vp);
+  // First pass: calculate all parts without excess
+  const capitalInitial = calculatePartCapital(inputs, vp);
   const fonctionnelle = calculatePartFonctionnelle(inputs, vp);
   const sociale = calculatePartSociale(inputs, vp);
   const personnelle = calculatePartPersonnelle(inputs, vp);
+  
+  // Calculate excess (VP - sum of parts) - if positive, add to reserves
+  let excess: number | null = null;
+  if (vp !== null) {
+    const sumPartsInitial = (capitalInitial.total.total ?? 0) + 
+                            (fonctionnelle.total.total ?? 0) + 
+                            (sociale.total.total ?? 0) + 
+                            (personnelle.total.total ?? 0);
+    const diff = vp - sumPartsInitial;
+    if (diff > 0) {
+      excess = diff;
+    }
+  }
+  
+  // Second pass: recalculate capital with excess added to reserves
+  const capital = excess !== null && excess > 0 
+    ? calculatePartCapital(inputs, vp, excess)
+    : capitalInitial;
   
   // Calculate reste à redistribuer
   let resteValue: number | null = null;
@@ -492,7 +522,7 @@ export function calculateBulletin(inputs: SimulatorInputs): BulletinViewModel {
     resteValue = vp - capital.total.total;
   }
   
-  // Stacked bar
+  // Stacked bar (use updated capital)
   const stackedBar = calculateStackedBar(capital, fonctionnelle, sociale, personnelle, vp);
   
   // Diagnostics
