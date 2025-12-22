@@ -42,7 +42,16 @@ export function StackedBar({ viewModel }: StackedBarProps) {
   
   return (
     <div className="absolute left-0 top-0 bottom-0 w-16 flex flex-col">
-      {/* 100% VP indicator at top */}
+      {/* Overflow indicator at top */}
+      {stackedBar.overflowPct !== null && stackedBar.overflowPct > 0 && (
+        <div className="bg-red-500 py-2 flex items-center justify-center">
+          <span className="text-[10px] font-bold text-primary-foreground">
+            +{stackedBar.overflowPct.toFixed(1)}%
+          </span>
+        </div>
+      )}
+      
+      {/* 100% VP indicator */}
       <div className="h-32 flex flex-col items-center justify-end pb-2 bg-gradient-to-b from-blue-300 to-blue-400">
         <span className="text-[11px] font-bold text-primary-foreground">100 %</span>
       </div>
@@ -71,15 +80,6 @@ export function StackedBar({ viewModel }: StackedBarProps) {
           </div>
         );
       })}
-      
-      {/* Overflow indicator */}
-      {stackedBar.overflowPct !== null && stackedBar.overflowPct > 0 && (
-        <div className="bg-red-400 py-1 flex items-center justify-center">
-          <span className="text-[9px] font-bold text-primary-foreground">
-            +{stackedBar.overflowPct.toFixed(1)}%
-          </span>
-        </div>
-      )}
     </div>
   );
 }

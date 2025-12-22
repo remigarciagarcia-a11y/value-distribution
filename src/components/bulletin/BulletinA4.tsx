@@ -56,7 +56,9 @@ function SmallStylizedAmount({ value }: { value: number | null }) {
 }
 
 export function BulletinA4({ viewModel }: BulletinA4Props) {
-  const { meta, vp, resteARedistribuer, parts, deficitDette } = viewModel;
+  const { meta, vp, resteARedistribuer, parts, deficitDette, stackedBar } = viewModel;
+  
+  const hasOverflow = stackedBar.overflowPct !== null && stackedBar.overflowPct > 0;
   
   return (
     <div className="bg-card shadow-document rounded-lg overflow-hidden" style={{ width: '210mm', minHeight: '297mm' }}>
@@ -93,6 +95,12 @@ export function BulletinA4({ viewModel }: BulletinA4Props) {
               <div className="flex-1">
                 <p className="part-label mb-2">Valeur produite</p>
                 <StylizedAmount value={vp.value} />
+                {hasOverflow && (
+                  <p className="mt-2 text-xs text-red-600 font-medium flex items-center gap-1">
+                    <span className="inline-block w-2 h-2 rounded-full bg-red-500"></span>
+                    Dépassement de {stackedBar.overflowPct?.toFixed(1)}% — La somme des parts dépasse la valeur produite
+                  </p>
+                )}
               </div>
               <div className="w-64 flex-shrink-0">
                 <HighlightBox>
