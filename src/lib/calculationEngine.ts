@@ -1,6 +1,9 @@
 // Pure calculation engine for the simulator
 // All functions are pure and testable
 
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
 import type {
   SimulatorInputs,
   BulletinViewModel,
@@ -557,7 +560,7 @@ export function calculateBulletin(inputs: SimulatorInputs): BulletinViewModel {
   
   return {
     meta: {
-      periode: inputs.salarie.moisAffiche,
+      periode: format(new Date(), 'MMMM yyyy', { locale: fr }).replace(/^./, c => c.toUpperCase()),
       poste: inputs.salarie.poste,
       statut: inputs.salarie.statut,
       anciennete: inputs.salarie.anciennete,
