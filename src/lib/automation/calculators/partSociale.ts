@@ -51,18 +51,18 @@ function toEngineInputs(inputs: PartSocialeAutomationInputs): PartSocialeV1Input
   
   const grossMonthly = employee.grossMonthly ?? employee.brutMonthly ?? null;
   
-  // Get PAS rate if in auto mode with custom rate
-  const pasRate = automation.irMode.mode === 'auto' && employee.pasRate !== undefined
+  // PAS rate handling:
+  // - Manual mode: use the pasRate input (user-entered rate)
+  // - Auto mode: don't pass pasRate, engine will use default brackets
+  const pasRate = automation.irMode.mode === 'manual' && employee.pasRate !== undefined
     ? employee.pasRate
     : undefined;
 
   const engineEmployee: EngineEmployeeInputs = {
     grossMonthly: grossMonthly ?? 0,
     isCadre: employee.status === 'cadre',
-    irMonthly: automation.irMode.mode === 'manual' 
-      ? (automation.irMode.manualValueMonthly ?? employee.irMonthlyManual ?? employee.irMonthly ?? undefined)
-      : undefined,
-    pasRate: pasRate, // Pass PAS rate for auto calculation
+    irMonthly: undefined, // No longer using direct IR amount
+    pasRate: pasRate, // Only set in manual mode
     accidentAtMpRate: 0.0125, // Default AT/MP rate
   };
   
@@ -272,6 +272,7 @@ export function computePartSociale(
       irMonthly: v1Result.ir.irMonthly,
       netAfterIR,
       irMode: v1Result.ir.source === 'manual' ? 'manual' : 'auto',
+      pasRateUsed: v1Result.ir.pasRate ?? null,
       contributions: cotisations,
       formula: netAfterIR !== null 
         ? `Net après IR = ${netAfterIR.toFixed(2)} €/mois`
@@ -393,23 +394,34 @@ function computePartSocialeLegacy(
     });
   }
 
-  // 5. Income Tax (IR) - from employee calculation
-  const ir: CalculationResult = {
+  // 5. Income Tax (IR) - from employee calculation with details
+  const irSource = employeeResult.irMode === 'auto' ? 'default_bracket' 
+                 : employeeResult.irMode === 'manual' ? 'custom_rate' 
+                 : 'manual';
+  
+  const ir: CalculationResult & { 
+    netImposable?: number | null;
+    pasRate?: number | null;
+    irSource?: string;
+  } = {
     value: employeeResult.irMonthly,
+    netImposable: employeeResult.netTaxable,
+    pasRate: employeeResult.pasRateUsed,
+    irSource: irSource,
     formula: employeeResult.irMonthly !== null 
       ? `IR (${employeeResult.irMode}) = ${employeeResult.irMonthly.toFixed(2)} €/mois`
-      : 'IR = ND (taux PAS manquant)',
-    sources: employeeResult.irMode === 'auto' ? ['Calcul PAS automatique'] : 
-             employeeResult.irMode === 'manual' ? ['Saisie manuelle'] : [],
-    assumptions: employeeResult.irMode === 'nd' ? ['IR non calculable: taux PAS requis'] : [],
-    missingInputs: employeeResult.irMode === 'nd' ? ['employee.pasRate'] : [],
+      : 'IR = ND',
+    sources: employeeResult.irMode === 'auto' ? ['Taux PAS calculé (barème par défaut)'] : 
+             employeeResult.irMode === 'manual' ? ['Taux PAS saisi manuellement'] : [],
+    assumptions: employeeResult.irMode === 'nd' ? ['IR non calculable: brut manquant'] : [],
+    missingInputs: employeeResult.irMode === 'nd' ? ['employee.grossMonthly'] : [],
   };
 
   if (ir.missingInputs.length > 0) {
     diagnostics.push({
       type: 'info',
       code: 'MISSING_IR_INPUTS',
-      message: `IR: taux PAS manquant`,
+      message: `IR: données manquantes`,
       field: 'ir',
     });
   }

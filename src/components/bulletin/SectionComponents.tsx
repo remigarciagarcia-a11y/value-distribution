@@ -16,7 +16,7 @@ function formatIRSource(source: 'manual' | 'custom_rate' | 'default_bracket'): s
   switch (source) {
     case 'manual': return 'manuel';
     case 'custom_rate': return 'taux perso.';
-    case 'default_bracket': return 'barème';
+    case 'default_bracket': return 'barème auto';
     default: return '';
   }
 }

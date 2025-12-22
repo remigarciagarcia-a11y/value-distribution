@@ -15,6 +15,8 @@ import type {
 
 // Import default rates
 import ratesFr2025 from '../rates/fr/2025/social.json';
+// Import full rates config for PAS brackets
+import fullRates2025 from '../rates/fr/2025.json';
 
 /**
  * Compute complete employee salary breakdown
@@ -45,6 +47,7 @@ export function computeEmployeeSalary(
       irMonthly: null,
       netAfterIR: null,
       irMode: 'nd',
+      pasRateUsed: null,
       contributions: createEmptyContribResult(),
       formula: 'Salaire brut requis pour calcul',
       sources: [],
@@ -80,30 +83,34 @@ export function computeEmployeeSalary(
   // Step 4: Compute IR
   let irMonthly: number | null = null;
   let irMode: 'auto' | 'manual' | 'nd' = 'nd';
+  let pasRateUsed: number | null = null;
 
-  // Priority 1: Manual override
+  // Mode manual: use the pasRate input to calculate IR
   if (automation.irMode.mode === 'manual') {
-    if (automation.irMode.manualValueMonthly !== null && automation.irMode.manualValueMonthly !== undefined) {
+    if (employee.pasRate !== null && employee.pasRate >= 0 && employee.pasRate <= 1) {
+      if (netTaxable !== null) {
+        pasRateUsed = employee.pasRate;
+        irMonthly = netTaxable * pasRateUsed;
+        irMode = 'manual';
+        sources.push('Taux PAS saisi manuellement');
+      }
+    } else if (automation.irMode.manualValueMonthly !== null) {
+      // Fallback: direct IR amount (legacy)
       irMonthly = automation.irMode.manualValueMonthly;
-      irMode = 'manual';
-    } else if (employee.irMonthlyManual !== null) {
-      irMonthly = employee.irMonthlyManual;
       irMode = 'manual';
     }
   }
 
-  // Priority 2: Auto calculation with PAS rate
+  // Mode auto: calculate PAS rate from net imposable using default brackets
   if (irMode === 'nd' && automation.irMode.mode === 'auto') {
-    if (employee.pasRate !== null && employee.pasRate >= 0 && employee.pasRate <= 1) {
-      if (netTaxable !== null) {
-        irMonthly = netTaxable * employee.pasRate;
-        irMode = 'auto';
-        sources.push('Calcul PAS automatique');
-      } else {
-        missingInputs.push('netTaxable (dérivé de grossMonthly)');
-      }
+    if (netTaxable !== null) {
+      // Find the PAS rate from default brackets based on net imposable
+      pasRateUsed = findDefaultPASRate(netTaxable, ratesConfig);
+      irMonthly = netTaxable * pasRateUsed;
+      irMode = 'auto';
+      sources.push('Taux PAS calculé automatiquement (barème par défaut)');
     } else {
-      missingInputs.push('employee.pasRate');
+      missingInputs.push('netTaxable (dérivé de grossMonthly)');
     }
   }
 
@@ -144,12 +151,41 @@ export function computeEmployeeSalary(
     irMonthly,
     netAfterIR,
     irMode,
+    pasRateUsed,
     contributions: contribResult,
     formula: formulaParts.join(' → '),
     sources,
     assumptions,
     missingInputs,
   };
+}
+
+/**
+ * Find the PAS rate from default brackets based on net imposable
+ */
+function findDefaultPASRate(
+  netImposable: number,
+  _ratesConfig: SocialRatesConfig
+): number {
+  // Use imported rates for PAS brackets
+  const brackets = fullRates2025.pas_default_rates?.brackets;
+  
+  if (!brackets || !Array.isArray(brackets)) {
+    // Fallback to a default rate if brackets not available
+    return 0;
+  }
+  
+  for (const bracket of brackets) {
+    const minOk = bracket.min === null || netImposable >= bracket.min;
+    const maxOk = bracket.max === null || netImposable < bracket.max;
+    
+    if (minOk && maxOk) {
+      return bracket.rate;
+    }
+  }
+  
+  // Fallback to highest bracket
+  return brackets[brackets.length - 1].rate;
 }
 
 /**
