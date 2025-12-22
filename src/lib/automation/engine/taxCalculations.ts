@@ -1,13 +1,16 @@
 /**
- * Compute IS (Corporate Tax) and VAT
+ * Compute IS (Corporate Tax), VAT, and IR (Income Tax)
  */
 
 import type {
   RatesConfig,
   SocialSettings,
   CompanyInputs,
+  EmployeeInputs,
   ISResult,
   VATResult,
+  IRResult,
+  SocialResult,
 } from './types';
 import ratesJson from '../rates/fr/2025.json';
 
@@ -158,6 +161,102 @@ export function computeVAT(
     vatNetAnnual,
     vatNetMonthlyPerPerson,
     formula,
+    diagnostics,
+  };
+}
+
+/**
+ * Compute net imposable from gross salary and social contributions
+ * Net imposable ≈ Gross - employee contributions (excluding CSG non-deductible)
+ */
+function computeNetImposable(
+  grossMonthly: number,
+  social: SocialResult
+): number {
+  // Net imposable = Gross - cotisations salariales - CSG déductible - CRDS (approximation)
+  // In practice: Net imposable ≈ Gross × 0.78 for simplification
+  // More accurate: Gross - (employee contributions + CSG déductible)
+  const employeeContrib = social.totals.employeeContribMonthly;
+  const csgDeductible = social.breakdown?.csgDeductible ?? 0;
+  
+  // Net imposable = Gross - cotisations salariales (hors CSG/CRDS) - CSG déductible
+  return grossMonthly - employeeContrib - csgDeductible;
+}
+
+/**
+ * Find the PAS rate from default brackets based on net imposable
+ */
+function findDefaultPASRate(
+  netImposable: number,
+  config: RatesConfig
+): number {
+  const brackets = config.pas_default_rates.brackets;
+  
+  for (const bracket of brackets) {
+    const minOk = bracket.min === null || netImposable >= bracket.min;
+    const maxOk = bracket.max === null || netImposable < bracket.max;
+    
+    if (minOk && maxOk) {
+      return bracket.rate;
+    }
+  }
+  
+  // Fallback to highest bracket
+  return brackets[brackets.length - 1].rate;
+}
+
+/**
+ * Compute IR (Income Tax / Prélèvement à la Source)
+ * Priority: manual IR > custom PAS rate > default bracket
+ */
+export function computeIR(
+  employee: EmployeeInputs,
+  social: SocialResult,
+  config: RatesConfig = defaultRates
+): IRResult {
+  const diagnostics = {
+    missingInputs: [] as string[],
+    warnings: [] as string[],
+  };
+  
+  // Priority 1: Manual IR amount
+  if (employee.irMonthly !== undefined && employee.irMonthly !== null) {
+    return {
+      netImposable: null,
+      pasRate: null,
+      irMonthly: employee.irMonthly,
+      source: 'manual',
+      formula: `IR manuel: ${employee.irMonthly.toFixed(2)} €`,
+      diagnostics,
+    };
+  }
+  
+  // Compute net imposable
+  const netImposable = computeNetImposable(employee.grossMonthly, social);
+  
+  // Priority 2: Custom PAS rate
+  if (employee.pasRate !== undefined && employee.pasRate !== null) {
+    const irMonthly = netImposable * employee.pasRate;
+    return {
+      netImposable,
+      pasRate: employee.pasRate,
+      irMonthly,
+      source: 'custom_rate',
+      formula: `${netImposable.toFixed(2)} × ${(employee.pasRate * 100).toFixed(2)}%`,
+      diagnostics,
+    };
+  }
+  
+  // Priority 3: Default bracket
+  const defaultRate = findDefaultPASRate(netImposable, config);
+  const irMonthly = netImposable * defaultRate;
+  
+  return {
+    netImposable,
+    pasRate: defaultRate,
+    irMonthly,
+    source: 'default_bracket',
+    formula: `${netImposable.toFixed(2)} × ${(defaultRate * 100).toFixed(2)}% (barème par défaut)`,
     diagnostics,
   };
 }

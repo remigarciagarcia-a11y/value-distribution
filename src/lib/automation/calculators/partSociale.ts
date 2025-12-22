@@ -51,12 +51,18 @@ function toEngineInputs(inputs: PartSocialeAutomationInputs): PartSocialeV1Input
   
   const grossMonthly = employee.grossMonthly ?? employee.brutMonthly ?? null;
   
+  // Get PAS rate if in auto mode with custom rate
+  const pasRate = automation.irMode.mode === 'auto' && employee.pasRate !== undefined
+    ? employee.pasRate
+    : undefined;
+
   const engineEmployee: EngineEmployeeInputs = {
     grossMonthly: grossMonthly ?? 0,
     isCadre: employee.status === 'cadre',
     irMonthly: automation.irMode.mode === 'manual' 
       ? (automation.irMode.manualValueMonthly ?? employee.irMonthlyManual ?? employee.irMonthly ?? undefined)
       : undefined,
+    pasRate: pasRate, // Pass PAS rate for auto calculation
     accidentAtMpRate: 0.0125, // Default AT/MP rate
   };
   
@@ -226,15 +232,26 @@ export function computePartSociale(
       missingInputs: v1Result.vat.diagnostics.missingInputs,
     };
     
-    // Build IR result
-    const ir: CalculationResult = {
-      value: v1Result.irMonthly,
-      formula: v1Result.irMonthly !== null 
-        ? `IR = ${v1Result.irMonthly.toFixed(2)} €/mois`
-        : 'IR = ND (taux PAS manquant)',
-      sources: v1Result.irMonthly !== null ? ['Saisie manuelle'] : [],
-      assumptions: v1Result.irMonthly === null ? ['IR non calculable en V1: saisie manuelle requise'] : [],
-      missingInputs: v1Result.irMonthly === null ? ['employee.irMonthly'] : [],
+    // Build IR result from engine
+    const irSource = v1Result.ir.source === 'manual' 
+      ? ['Saisie manuelle'] 
+      : v1Result.ir.source === 'custom_rate'
+        ? ['Taux PAS personnalisé']
+        : ['Barème PAS par défaut 2025'];
+    
+    const ir: CalculationResult & { 
+      netImposable?: number | null;
+      pasRate?: number | null;
+      irSource?: string;
+    } = {
+      value: v1Result.ir.irMonthly,
+      netImposable: v1Result.ir.netImposable,
+      pasRate: v1Result.ir.pasRate,
+      irSource: v1Result.ir.source,
+      formula: v1Result.ir.formula,
+      sources: irSource,
+      assumptions: [],
+      missingInputs: v1Result.ir.diagnostics.missingInputs,
     };
     
     // Build employee result (simplified for V1)
@@ -251,10 +268,10 @@ export function computePartSociale(
       employeeContribMonthly: totalMonthlyEmployee,
       csgCrdsMonthly,
       netBeforeIR,
-      netTaxable: netBeforeIR, // Approximation
-      irMonthly: v1Result.irMonthly,
+      netTaxable: v1Result.ir.netImposable ?? netBeforeIR, // Use engine's net imposable
+      irMonthly: v1Result.ir.irMonthly,
       netAfterIR,
-      irMode: v1Result.irMonthly !== null ? 'manual' : 'nd',
+      irMode: v1Result.ir.source === 'manual' ? 'manual' : 'auto',
       contributions: cotisations,
       formula: netAfterIR !== null 
         ? `Net après IR = ${netAfterIR.toFixed(2)} €/mois`

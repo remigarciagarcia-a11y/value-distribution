@@ -200,5 +200,38 @@
       "Les pages officielles donnent 2 valeurs de T en 2025 (avant/après 1er mai).",
       "Implémentation V1 conseillée: calcul annualisé simplifié à partir d'un brut mensuel constant."
     ]
+  },
+  "pas_default_rates": {
+    "meta": {
+      "country": "FR",
+      "zone": "metropole",
+      "type": "PAS_TAUX_PAR_DEFAUT_NON_PERSONNALISE",
+      "base": "base_mensuelle_de_prelevement (revenu_net_imposable_mensuel)",
+      "calculation": "prelevement = base * taux (taux proportionnel sur toute la base)",
+      "effectiveFrom": "2025-05-01",
+      "source": "net-entreprises.fr (DSN/PASRAU - barèmes 2025)"
+    },
+    "brackets": [
+      { "min": null,   "max": 1620,  "rate": 0.0 },
+      { "min": 1620,   "max": 1683,  "rate": 0.005 },
+      { "min": 1683,   "max": 1791,  "rate": 0.013 },
+      { "min": 1791,   "max": 1911,  "rate": 0.021 },
+      { "min": 1911,   "max": 2042,  "rate": 0.029 },
+      { "min": 2042,   "max": 2151,  "rate": 0.035 },
+      { "min": 2151,   "max": 2294,  "rate": 0.041 },
+      { "min": 2294,   "max": 2714,  "rate": 0.053 },
+      { "min": 2714,   "max": 3107,  "rate": 0.075 },
+      { "min": 3107,   "max": 3539,  "rate": 0.099 },
+      { "min": 3539,   "max": 3983,  "rate": 0.119 },
+      { "min": 3983,   "max": 4648,  "rate": 0.138 },
+      { "min": 4648,   "max": 5574,  "rate": 0.158 },
+      { "min": 5574,   "max": 6974,  "rate": 0.179 },
+      { "min": 6974,   "max": 8711,  "rate": 0.2 },
+      { "min": 8711,   "max": 12091, "rate": 0.24 },
+      { "min": 12091,  "max": 16376, "rate": 0.28 },
+      { "min": 16376,  "max": 25706, "rate": 0.33 },
+      { "min": 25706,  "max": 55062, "rate": 0.38 },
+      { "min": 55062,  "max": null,  "rate": 0.43 }
+    ]
   }
 }

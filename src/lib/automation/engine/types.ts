@@ -7,6 +7,25 @@
 // CONFIG TYPES (from JSON)
 // ============================================
 
+export interface PASBracket {
+  min: number | null;
+  max: number | null;
+  rate: number;
+}
+
+export interface PASDefaultRates {
+  meta: {
+    country: string;
+    zone: string;
+    type: string;
+    base: string;
+    calculation: string;
+    effectiveFrom: string;
+    source: string;
+  };
+  brackets: PASBracket[];
+}
+
 export interface RatesConfig {
   meta: {
     country: string;
@@ -36,6 +55,7 @@ export interface RatesConfig {
     };
     notes: string[];
   };
+  pas_default_rates: PASDefaultRates;
 }
 
 export interface ContributionConfig {
@@ -82,7 +102,8 @@ export interface SocialSettings {
 export interface EmployeeInputs {
   grossMonthly: number;
   isCadre: boolean;
-  irMonthly?: number; // manual, optional
+  irMonthly?: number; // manual IR amount, optional
+  pasRate?: number; // PAS rate (e.g., 0.075 for 7.5%), optional - if not provided, uses default bracket
   accidentAtMpRate: number; // required, e.g., 0.0125
   versementMobiliteRate?: number;
   applyReductionGenerale?: boolean;
@@ -163,8 +184,21 @@ export interface VATResult {
   };
 }
 
+export interface IRResult {
+  netImposable: number | null;
+  pasRate: number | null;
+  irMonthly: number | null;
+  source: 'manual' | 'custom_rate' | 'default_bracket';
+  formula: string;
+  diagnostics: {
+    missingInputs: string[];
+    warnings: string[];
+  };
+}
+
 export interface PartSocialeV1Result {
   social: SocialResult;
+  ir: IRResult;
   is: ISResult;
   vat: VATResult;
   irMonthly: number | null;
