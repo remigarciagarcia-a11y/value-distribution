@@ -1,65 +1,43 @@
-// Types for scenario JSON data
+// Types for scenario JSON data (new prefill format)
 
 export interface ScenarioVatLine {
   rate: number;
   baseHTAnnual: number;
 }
 
-export interface ScenarioPrime {
-  label: string;
-  amount: number;
+export interface ScenarioPrefill {
+  'base.ponderation': 'HEADCOUNT' | 'FTE';
+  'base.effectif': number;
+  'base.etp': number;
+  'base.caAnnuelHT': number;
+  'sociale.company.taxableProfitAnnual': number;
+  'sociale.company.isReducedRateEnabled': boolean;
+  'sociale.automation.isMode': 'AUTO' | 'MANUAL';
+  'capital.dividendes': number;
+  'capital.reserves': number;
+  'sociale.vat.sales': ScenarioVatLine[];
+  'sociale.vat.purchases': ScenarioVatLine[];
+  'sociale.automation.vatMode.manualValue': number | null;
+  'organisation.locauxEnergie': number;
+  'organisation.outilsIT': number;
+  'organisation.managementIntermediaire': number;
+  'organisation.fonctionsSupport': number;
+  'investissement.amortissements': number;
+  'investissement.formation': number;
+  'investissement.rAndD': number;
 }
 
-export interface ScenarioAvantage {
-  label: string;
-  amount: number;
-}
-
-export interface ScenarioSettings {
-  year: number;
-  periodDate: string;
-  divisorMode: 'HEADCOUNT' | 'ETP';
-  headcount: number;
-}
-
-export interface ScenarioCompany {
-  name: string;
-  sector: string;
-  caAnnualHT: number;
-  taxableProfitAnnual: number;
-  isReducedRateEnabled: boolean;
-  accidentAtMpRateDefault: number;
-  pnlAnnual: {
-    organisation: Record<string, number>;
-    investment: Record<string, number>;
-    capital: Record<string, number>;
-    social: {
-      citIS: 'AUTO' | 'MANUAL';
-      vatNet: 'AUTO' | 'MANUAL';
-      vatNetAnnualManual?: number;
-    };
-  };
-  vat: {
-    sales: ScenarioVatLine[];
-    purchases: ScenarioVatLine[];
-  };
-}
-
-export interface ScenarioEmployee {
-  jobTitle: string;
-  isCadre: boolean;
-  grossMonthly: number;
-  pasRate: number;
-  irMonthlyManual?: number | null;
-  primes: ScenarioPrime[];
-  avantages: ScenarioAvantage[];
-  accidentAtMpRate: number;
+export interface ScenarioTotals {
+  'organisation.total': number;
+  'investissement.total': number;
+  'fonctionnelle.total': number;
+  'capital.total': number;
 }
 
 export interface ScenarioData {
-  scenarioId: string;
-  label: string;
-  settings: ScenarioSettings;
-  company: ScenarioCompany;
-  employee: ScenarioEmployee;
+  id: string;
+  name: string;
+  description: string;
+  prefill: ScenarioPrefill;
+  totals: ScenarioTotals;
 }
