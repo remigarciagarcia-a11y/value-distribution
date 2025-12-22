@@ -4,13 +4,33 @@ import type { LineValue, PartTotal } from '@/lib/types';
 interface SectionLineProps {
   line: LineValue;
   showPct?: boolean;
+  showRate?: boolean;
 }
 
-export function SectionLine({ line, showPct = false }: SectionLineProps) {
+function formatRate(rate: number | null | undefined): string {
+  if (rate === null || rate === undefined) return '';
+  return `${(rate * 100).toFixed(2)}%`;
+}
+
+export function SectionLine({ line, showPct = false, showRate = false }: SectionLineProps) {
+  const hasRate = showRate && (line.rate !== null && line.rate !== undefined);
+  const hasDetailedRates = showRate && (line.rateEmployee !== null && line.rateEmployee !== undefined);
+  
   return (
-    <div className="flex justify-between items-baseline py-0.5">
-      <span className="text-sm text-foreground/80">{line.label}</span>
-      <span className="text-sm font-medium tabular-nums">
+    <div className="flex justify-between items-baseline py-0.5 gap-2">
+      <span className="text-sm text-foreground/80 flex-1">{line.label}</span>
+      {hasRate && (
+        <span className="text-xs text-muted-foreground tabular-nums min-w-[60px] text-right">
+          {hasDetailedRates ? (
+            <span title={`Salarié: ${formatRate(line.rateEmployee)} | Employeur: ${formatRate(line.rateEmployer)}`}>
+              {formatRate(line.rate)}
+            </span>
+          ) : (
+            formatRate(line.rate)
+          )}
+        </span>
+      )}
+      <span className="text-sm font-medium tabular-nums min-w-[80px] text-right">
         {formatND(line.value)}
       </span>
     </div>

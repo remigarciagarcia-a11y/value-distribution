@@ -180,7 +180,15 @@ export function computeSocialContributions(
  */
 export function aggregateContributionsByCategory(
   result: SocialContributionsResult
-): { category: string; label: string; totalMonthly: number }[] {
+): { 
+  category: string; 
+  label: string; 
+  totalMonthly: number;
+  totalRate: number;
+  totalRateEmployee: number;
+  totalRateEmployer: number;
+  baseAmount: number;
+}[] {
   const categoryLabels: Record<string, string> = {
     health: 'Santé',
     retirement: 'Retraite',
@@ -190,15 +198,33 @@ export function aggregateContributionsByCategory(
     other: 'Autres contributions',
   };
 
-  const byCategory: Record<string, number> = {};
+  const byCategory: Record<string, { 
+    total: number; 
+    baseAmount: number;
+    employeeTotal: number;
+    employerTotal: number;
+  }> = {};
   
   for (const line of result.lines) {
-    byCategory[line.category] = (byCategory[line.category] ?? 0) + (line.valueMonthly ?? 0);
+    if (!byCategory[line.category]) {
+      byCategory[line.category] = { total: 0, baseAmount: 0, employeeTotal: 0, employerTotal: 0 };
+    }
+    byCategory[line.category].total += line.valueMonthly ?? 0;
+    byCategory[line.category].baseAmount = Math.max(byCategory[line.category].baseAmount, line.baseAmount ?? 0);
+    byCategory[line.category].employeeTotal += line.valueMonthlyEmployee ?? 0;
+    byCategory[line.category].employerTotal += line.valueMonthlyEmployer ?? 0;
   }
 
-  return Object.entries(byCategory).map(([category, total]) => ({
-    category,
-    label: categoryLabels[category] ?? category,
-    totalMonthly: total,
-  }));
+  return Object.entries(byCategory).map(([category, data]) => {
+    const base = data.baseAmount || 1;
+    return {
+      category,
+      label: categoryLabels[category] ?? category,
+      totalMonthly: data.total,
+      totalRate: data.total / base,
+      totalRateEmployee: data.employeeTotal / base,
+      totalRateEmployer: data.employerTotal / base,
+      baseAmount: data.baseAmount,
+    };
+  });
 }

@@ -138,6 +138,9 @@ export interface LineValue {
   label: string;
   value: number | null;  // null = ND
   pct: number | null;    // null = cannot calculate
+  rate?: number | null;  // rate as decimal (e.g., 0.07 for 7%)
+  rateEmployee?: number | null;  // employee portion rate
+  rateEmployer?: number | null;  // employer portion rate
   isPartial?: boolean;
   formulaText?: string;
   sourceFields?: string[];

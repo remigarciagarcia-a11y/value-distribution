@@ -218,7 +218,7 @@ export function BulletinA4({ viewModel }: BulletinA4Props) {
                 
                 <div className="ml-11 space-y-0.5">
                   {parts.sociale.lines.map((line, i) => (
-                    <SectionLine key={i} line={line} />
+                    <SectionLine key={i} line={line} showRate={true} />
                   ))}
                 </div>
                 
