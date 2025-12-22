@@ -324,6 +324,9 @@ export function calculatePartSociale(inputs: SimulatorInputs, vp: number | null)
         label: l.label,
         value: l.value,
         pct: l.pct,
+        rate: l.rate,
+        rateEmployee: l.rateEmployee,
+        rateEmployer: l.rateEmployer,
       })),
       total: {
         total: vmResult.total.total,

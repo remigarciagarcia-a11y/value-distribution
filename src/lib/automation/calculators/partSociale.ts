@@ -463,7 +463,14 @@ export function toPartSocialeVM(
   result: PartSocialeAutomatedResult,
   vp: number | null
 ): {
-  lines: { label: string; value: number | null; pct: number | null }[];
+  lines: { 
+    label: string; 
+    value: number | null; 
+    pct: number | null;
+    rate?: number | null;
+    rateEmployee?: number | null;
+    rateEmployer?: number | null;
+  }[];
   total: { total: number | null; pct: number | null; isPartial: boolean };
 } {
   const calculatePct = (value: number | null): number | null => {
@@ -474,36 +481,55 @@ export function toPartSocialeVM(
   // Aggregate contributions by category
   const contribCategories = aggregateContributionsByCategory(result.cotisations);
 
-  const lines: { label: string; value: number | null; pct: number | null }[] = [];
+  const lines: { 
+    label: string; 
+    value: number | null; 
+    pct: number | null;
+    rate?: number | null;
+    rateEmployee?: number | null;
+    rateEmployer?: number | null;
+  }[] = [];
 
-  // Add contribution categories
+  // Add contribution categories with rates
   for (const cat of contribCategories) {
     lines.push({
       label: cat.label,
       value: cat.totalMonthly,
       pct: calculatePct(cat.totalMonthly),
+      rate: cat.totalRate,
+      rateEmployee: cat.totalRateEmployee,
+      rateEmployer: cat.totalRateEmployer,
     });
   }
 
-  // Add IR
+  // Add IR (no rate - it's based on PAS)
   lines.push({
     label: 'Impôt sur le revenu',
     value: result.ir.value,
     pct: calculatePct(result.ir.value),
+    rate: null,
   });
 
-  // Add IS (monthly per person)
+  // Add IS (monthly per person) - show 25% or 15% rate
+  const isRate = result.is.annual !== null && result.is.annual > 0 
+    ? (result.is.tranches?.length > 0 
+        ? result.is.tranches.reduce((sum, t) => sum + t.amount, 0) / 
+          result.is.tranches.reduce((sum, t) => sum + t.base, 0)
+        : 0.25)
+    : null;
   lines.push({
     label: 'Impôt sur les sociétés',
     value: result.is.monthlyPerPerson,
     pct: calculatePct(result.is.monthlyPerPerson),
+    rate: isRate,
   });
 
-  // Add TVA (monthly per person)
+  // Add TVA (monthly per person) - typically 20%
   lines.push({
     label: 'TVA nette reversée',
     value: result.vat.netMonthlyPerPerson,
     pct: calculatePct(result.vat.netMonthlyPerPerson),
+    rate: 0.20, // Default French VAT rate
   });
 
   return {
