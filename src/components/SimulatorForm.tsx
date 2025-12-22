@@ -386,15 +386,6 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
         
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label htmlFor="annee">Année de référence</Label>
-            <Input
-              id="annee"
-              value={inputs.base.anneeReference}
-              onChange={(e) => updateBase('anneeReference', e.target.value)}
-            />
-          </div>
-          
-          <div>
             <Label htmlFor="ca">CA annuel HT (€)</Label>
             <Input
               id="ca"
@@ -404,7 +395,6 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
               onChange={(e) => updateBase('caAnnuelHT', parseNumber(e.target.value))}
             />
           </div>
-          
         </div>
         
         <div className="mt-4 flex items-center gap-4">
