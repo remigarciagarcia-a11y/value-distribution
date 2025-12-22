@@ -382,9 +382,9 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
         )}
       </section>
       
-      {/* Base Parameters */}
+      {/* Informations entreprise */}
       <section className="form-section">
-        <h3 className="font-semibold text-sm text-primary mb-4">Paramètres de base</h3>
+        <h3 className="font-semibold text-sm text-primary mb-4">Informations entreprise</h3>
         
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -395,6 +395,37 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
               placeholder="Ex: 1 000 000"
               value={inputs.base.caAnnuelHT ?? ''}
               onChange={(e) => updateBase('caAnnuelHT', parseNumber(e.target.value))}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="taxableProfit">Bénéfice imposable annuel (€)</Label>
+            <Input
+              id="taxableProfit"
+              type="text"
+              placeholder="Ex: 150 000"
+              value={company.taxableProfitAnnual ?? ''}
+              onChange={(e) => updateSocialeCompany('taxableProfitAnnual', parseNumber(e.target.value))}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="dividendes">Dividendes (€/an)</Label>
+            <Input
+              id="dividendes"
+              type="text"
+              value={inputs.capital.dividendes ?? ''}
+              onChange={(e) => updateCapital('dividendes', parseNumber(e.target.value))}
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="reserves">Réserves (€/an)</Label>
+            <Input
+              id="reserves"
+              type="text"
+              value={inputs.capital.reserves ?? ''}
+              onChange={(e) => updateCapital('reserves', parseNumber(e.target.value))}
             />
           </div>
         </div>
@@ -449,32 +480,114 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
             </div>
           )}
         </div>
-      </section>
-      
-      {/* Capital */}
-      <section className="form-section">
-        <h3 className="font-semibold text-sm text-primary mb-4">Part du Capital (annuel €)</h3>
         
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="dividendes">Dividendes</Label>
-            <Input
-              id="dividendes"
-              type="text"
-              value={inputs.capital.dividendes ?? ''}
-              onChange={(e) => updateCapital('dividendes', parseNumber(e.target.value))}
-            />
-          </div>
+        {/* TVA intégrée */}
+        <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+          <ModeToggle
+            mode={automation.vatMode.mode}
+            onToggle={(m) => updateAutomationMode('vatMode', m)}
+            label="TVA nette reversée"
+          />
           
-          <div>
-            <Label htmlFor="reserves">Réserves</Label>
-            <Input
-              id="reserves"
-              type="text"
-              value={inputs.capital.reserves ?? ''}
-              onChange={(e) => updateCapital('reserves', parseNumber(e.target.value))}
-            />
-          </div>
+          {automation.vatMode.mode === 'auto' ? (
+            <div className="space-y-4">
+              {/* Ventes */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-xs">Ventes (TVA collectée)</Label>
+                  <Button variant="ghost" size="sm" onClick={() => addVATLine('sales')}>
+                    <Plus className="w-3 h-3 mr-1" />
+                    Ajouter
+                  </Button>
+                </div>
+                {vat.sales.map(line => (
+                  <div key={line.id} className="flex gap-2 mb-2">
+                    <select
+                      value={line.rate}
+                      onChange={(e) => updateVATLine('sales', line.id, 'rate', parseFloat(e.target.value))}
+                      className="w-24 px-2 py-1.5 text-sm border rounded-md bg-background"
+                    >
+                      <option value={0.20}>20%</option>
+                      <option value={0.10}>10%</option>
+                      <option value={0.055}>5.5%</option>
+                      <option value={0.021}>2.1%</option>
+                    </select>
+                    <Input
+                      type="text"
+                      placeholder="CA HT annuel"
+                      value={line.baseHTAnnual ?? ''}
+                      onChange={(e) => updateVATLine('sales', line.id, 'baseHTAnnual', parseNumber(e.target.value))}
+                      className="flex-1"
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => removeVATLine('sales', line.id)}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+                {vat.sales.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic">Aucune ligne de vente</p>
+                )}
+              </div>
+              
+              {/* Achats */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label className="text-xs">Achats (TVA déductible)</Label>
+                  <Button variant="ghost" size="sm" onClick={() => addVATLine('purchases')}>
+                    <Plus className="w-3 h-3 mr-1" />
+                    Ajouter
+                  </Button>
+                </div>
+                {vat.purchases.map(line => (
+                  <div key={line.id} className="flex gap-2 mb-2">
+                    <select
+                      value={line.rate}
+                      onChange={(e) => updateVATLine('purchases', line.id, 'rate', parseFloat(e.target.value))}
+                      className="w-24 px-2 py-1.5 text-sm border rounded-md bg-background"
+                    >
+                      <option value={0.20}>20%</option>
+                      <option value={0.10}>10%</option>
+                      <option value={0.055}>5.5%</option>
+                      <option value={0.021}>2.1%</option>
+                    </select>
+                    <Input
+                      type="text"
+                      placeholder="Achats HT annuel"
+                      value={line.baseHTAnnual ?? ''}
+                      onChange={(e) => updateVATLine('purchases', line.id, 'baseHTAnnual', parseNumber(e.target.value))}
+                      className="flex-1"
+                    />
+                    <Button variant="ghost" size="icon" onClick={() => removeVATLine('purchases', line.id)}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
+                ))}
+                {vat.purchases.length === 0 && (
+                  <p className="text-xs text-muted-foreground italic">Aucune ligne d'achat</p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className="w-1/2">
+              <Label htmlFor="vatManual">TVA nette annuelle (€)</Label>
+              <Input
+                id="vatManual"
+                type="text"
+                placeholder="TVA collectée - TVA déductible"
+                value={automation.vatMode.manualValue ?? ''}
+                onChange={(e) => onChange({
+                  ...inputs,
+                  sociale: {
+                    ...inputs.sociale,
+                    automation: {
+                      ...automation,
+                      vatMode: { ...automation.vatMode, manualValue: parseNumber(e.target.value) },
+                    },
+                  },
+                })}
+              />
+            </div>
+          )}
         </div>
       </section>
       
@@ -704,7 +817,7 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
           )}
         </div>
         
-        {/* Impôt sur les sociétés */}
+        {/* Impôt sur les sociétés - juste le taux */}
         <div className="mb-6 p-4 bg-muted/30 rounded-lg">
           <ModeToggle
             mode={automation.isMode.mode}
@@ -713,25 +826,13 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
           />
           
           {automation.isMode.mode === 'auto' ? (
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="taxableProfit">Bénéfice imposable annuel (€)</Label>
-                <Input
-                  id="taxableProfit"
-                  type="text"
-                  placeholder="Ex: 150 000"
-                  value={company.taxableProfitAnnual ?? ''}
-                  onChange={(e) => updateSocialeCompany('taxableProfitAnnual', parseNumber(e.target.value))}
-                />
-              </div>
-              <div className="flex items-center gap-2 mt-6">
-                <Switch
-                  id="reducedRate"
-                  checked={company.isReducedRateEnabled}
-                  onCheckedChange={(checked) => updateSocialeCompany('isReducedRateEnabled', checked)}
-                />
-                <Label htmlFor="reducedRate" className="text-sm">Taux réduit PME (15%)</Label>
-              </div>
+            <div className="flex items-center gap-2">
+              <Switch
+                id="reducedRate"
+                checked={company.isReducedRateEnabled}
+                onCheckedChange={(checked) => updateSocialeCompany('isReducedRateEnabled', checked)}
+              />
+              <Label htmlFor="reducedRate" className="text-sm">Taux réduit PME (15%)</Label>
             </div>
           ) : (
             <div className="w-1/2">
@@ -741,115 +842,6 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
                 type="text"
                 value={inputs.sociale.impotSocietes ?? ''}
                 onChange={(e) => updateSociale('impotSocietes', parseNumber(e.target.value))}
-              />
-            </div>
-          )}
-        </div>
-        
-        {/* TVA */}
-        <div className="p-4 bg-muted/30 rounded-lg">
-          <ModeToggle
-            mode={automation.vatMode.mode}
-            onToggle={(m) => updateAutomationMode('vatMode', m)}
-            label="TVA nette reversée"
-          />
-          
-          {automation.vatMode.mode === 'auto' ? (
-            <div className="space-y-4">
-              {/* Ventes */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-xs">Ventes (TVA collectée)</Label>
-                  <Button variant="ghost" size="sm" onClick={() => addVATLine('sales')}>
-                    <Plus className="w-3 h-3 mr-1" />
-                    Ajouter
-                  </Button>
-                </div>
-                {vat.sales.map(line => (
-                  <div key={line.id} className="flex gap-2 mb-2">
-                    <select
-                      value={line.rate}
-                      onChange={(e) => updateVATLine('sales', line.id, 'rate', parseFloat(e.target.value))}
-                      className="w-24 px-2 py-1.5 text-sm border rounded-md bg-background"
-                    >
-                      <option value={0.20}>20%</option>
-                      <option value={0.10}>10%</option>
-                      <option value={0.055}>5.5%</option>
-                      <option value={0.021}>2.1%</option>
-                    </select>
-                    <Input
-                      type="text"
-                      placeholder="CA HT annuel"
-                      value={line.baseHTAnnual ?? ''}
-                      onChange={(e) => updateVATLine('sales', line.id, 'baseHTAnnual', parseNumber(e.target.value))}
-                      className="flex-1"
-                    />
-                    <Button variant="ghost" size="icon" onClick={() => removeVATLine('sales', line.id)}>
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </div>
-                ))}
-                {vat.sales.length === 0 && (
-                  <p className="text-xs text-muted-foreground italic">Aucune ligne de vente</p>
-                )}
-              </div>
-              
-              {/* Achats */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <Label className="text-xs">Achats (TVA déductible)</Label>
-                  <Button variant="ghost" size="sm" onClick={() => addVATLine('purchases')}>
-                    <Plus className="w-3 h-3 mr-1" />
-                    Ajouter
-                  </Button>
-                </div>
-                {vat.purchases.map(line => (
-                  <div key={line.id} className="flex gap-2 mb-2">
-                    <select
-                      value={line.rate}
-                      onChange={(e) => updateVATLine('purchases', line.id, 'rate', parseFloat(e.target.value))}
-                      className="w-24 px-2 py-1.5 text-sm border rounded-md bg-background"
-                    >
-                      <option value={0.20}>20%</option>
-                      <option value={0.10}>10%</option>
-                      <option value={0.055}>5.5%</option>
-                      <option value={0.021}>2.1%</option>
-                    </select>
-                    <Input
-                      type="text"
-                      placeholder="Achats HT annuel"
-                      value={line.baseHTAnnual ?? ''}
-                      onChange={(e) => updateVATLine('purchases', line.id, 'baseHTAnnual', parseNumber(e.target.value))}
-                      className="flex-1"
-                    />
-                    <Button variant="ghost" size="icon" onClick={() => removeVATLine('purchases', line.id)}>
-                      <Trash2 className="w-4 h-4 text-destructive" />
-                    </Button>
-                  </div>
-                ))}
-                {vat.purchases.length === 0 && (
-                  <p className="text-xs text-muted-foreground italic">Aucune ligne d'achat</p>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="w-1/2">
-              <Label htmlFor="vatManual">TVA nette annuelle (€)</Label>
-              <Input
-                id="vatManual"
-                type="text"
-                placeholder="TVA collectée - TVA déductible"
-                value={automation.vatMode.manualValue ?? ''}
-                onChange={(e) => onChange({
-                  ...inputs,
-                  sociale: {
-                    ...inputs.sociale,
-                    automation: {
-                      ...automation,
-                      vatMode: { ...automation.vatMode, manualValue: parseNumber(e.target.value) },
-                    },
-                  },
-                })}
               />
             </div>
           )}
