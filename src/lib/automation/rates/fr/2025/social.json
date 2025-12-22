@@ -1,0 +1,216 @@
+{
+  "year": 2025,
+  "pmss": {
+    "monthly": 3925,
+    "annual": 47100,
+    "notes": "Plafond mensuel de la Sécurité Sociale 2025 (estimé, à confirmer par décret)"
+  },
+  "contributions": [
+    {
+      "id": "maladie_maternite",
+      "label": "Health Insurance (Sickness/Maternity)",
+      "labelFr": "Assurance maladie-maternité-invalidité-décès",
+      "category": "health",
+      "base": "brut_total",
+      "rateEmployer": 0.13,
+      "rateEmployee": 0,
+      "rateTotal": 0.13,
+      "notes": "Taux patronal 13% sur totalité du salaire"
+    },
+    {
+      "id": "complementaire_sante",
+      "label": "Complementary Health",
+      "labelFr": "Complémentaire santé obligatoire",
+      "category": "health",
+      "base": "brut_total",
+      "rateEmployer": 0.01,
+      "rateEmployee": 0.01,
+      "rateTotal": 0.02,
+      "notes": "Environ 1% employeur + 1% salarié (variable selon contrat)"
+    },
+    {
+      "id": "retraite_base",
+      "label": "Basic Retirement",
+      "labelFr": "Assurance vieillesse de base (plafonnée)",
+      "category": "retirement",
+      "base": "brut_plafonne_pmss",
+      "rateEmployer": 0.0855,
+      "rateEmployee": 0.0690,
+      "rateTotal": 0.1545,
+      "notes": "Sur la tranche A (jusqu'au PMSS)"
+    },
+    {
+      "id": "retraite_base_deplafonnee",
+      "label": "Basic Retirement (uncapped)",
+      "labelFr": "Assurance vieillesse de base (déplafonnée)",
+      "category": "retirement",
+      "base": "brut_total",
+      "rateEmployer": 0.0210,
+      "rateEmployee": 0.0040,
+      "rateTotal": 0.0250,
+      "notes": "Sur la totalité du salaire"
+    },
+    {
+      "id": "agirc_arrco_t1",
+      "label": "AGIRC-ARRCO Tranche 1",
+      "labelFr": "Retraite complémentaire AGIRC-ARRCO T1",
+      "category": "retirement",
+      "base": "brut_plafonne_pmss",
+      "rateEmployer": 0.0472,
+      "rateEmployee": 0.0315,
+      "rateTotal": 0.0787,
+      "notes": "Tranche 1: jusqu'au PMSS"
+    },
+    {
+      "id": "chomage",
+      "label": "Unemployment Insurance",
+      "labelFr": "Assurance chômage",
+      "category": "unemployment",
+      "base": "brut_plafonne_pmss",
+      "rateEmployer": 0.0405,
+      "rateEmployee": 0,
+      "rateTotal": 0.0405,
+      "notes": "Part salariale supprimée depuis 2018, plafonné à 4 PMSS"
+    },
+    {
+      "id": "ags",
+      "label": "AGS (Wage Guarantee)",
+      "labelFr": "AGS (garantie des salaires)",
+      "category": "unemployment",
+      "base": "brut_plafonne_pmss",
+      "rateEmployer": 0.0015,
+      "rateEmployee": 0,
+      "rateTotal": 0.0015,
+      "notes": "Plafonné à 4 PMSS"
+    },
+    {
+      "id": "allocations_familiales",
+      "label": "Family Allowances",
+      "labelFr": "Allocations familiales",
+      "category": "solidarity",
+      "base": "brut_total",
+      "rateEmployer": 0.0345,
+      "rateEmployee": 0,
+      "rateTotal": 0.0345,
+      "notes": "Taux réduit à 3.45% si salaire < 3.5 SMIC"
+    },
+    {
+      "id": "accidents_travail",
+      "label": "Work Accidents",
+      "labelFr": "Accidents du travail / maladies professionnelles",
+      "category": "health",
+      "base": "brut_total",
+      "rateEmployer": 0.02,
+      "rateEmployee": 0,
+      "rateTotal": 0.02,
+      "notes": "Taux variable selon secteur, moyenne ~2%"
+    },
+    {
+      "id": "contribution_solidarite_autonomie",
+      "label": "Solidarity Autonomy",
+      "labelFr": "Contribution solidarité autonomie (CSA)",
+      "category": "solidarity",
+      "base": "brut_total",
+      "rateEmployer": 0.003,
+      "rateEmployee": 0,
+      "rateTotal": 0.003,
+      "notes": "Financement de la dépendance"
+    },
+    {
+      "id": "fnal",
+      "label": "FNAL",
+      "labelFr": "FNAL (aide au logement)",
+      "category": "solidarity",
+      "base": "brut_total",
+      "rateEmployer": 0.005,
+      "rateEmployee": 0,
+      "rateTotal": 0.005,
+      "notes": "0.50% si >= 50 salariés, 0.10% plafonné sinon"
+    },
+    {
+      "id": "csg_deductible",
+      "label": "CSG Deductible",
+      "labelFr": "CSG déductible",
+      "category": "csg_crds",
+      "base": "brut_total",
+      "rateEmployer": 0,
+      "rateEmployee": 0.068,
+      "rateTotal": 0.068,
+      "notes": "Calculée sur 98.25% du brut, déductible de l'IR"
+    },
+    {
+      "id": "csg_non_deductible",
+      "label": "CSG Non-Deductible",
+      "labelFr": "CSG non déductible",
+      "category": "csg_crds",
+      "base": "brut_total",
+      "rateEmployer": 0,
+      "rateEmployee": 0.024,
+      "rateTotal": 0.024,
+      "notes": "Calculée sur 98.25% du brut"
+    },
+    {
+      "id": "crds",
+      "label": "CRDS",
+      "labelFr": "CRDS",
+      "category": "csg_crds",
+      "base": "brut_total",
+      "rateEmployer": 0,
+      "rateEmployee": 0.005,
+      "rateTotal": 0.005,
+      "notes": "Calculée sur 98.25% du brut"
+    },
+    {
+      "id": "formation_professionnelle",
+      "label": "Professional Training",
+      "labelFr": "Formation professionnelle",
+      "category": "other",
+      "base": "brut_total",
+      "rateEmployer": 0.0055,
+      "rateEmployee": 0,
+      "rateTotal": 0.0055,
+      "notes": "0.55% si < 11 salariés, 1% si >= 11"
+    },
+    {
+      "id": "taxe_apprentissage",
+      "label": "Apprenticeship Tax",
+      "labelFr": "Taxe d'apprentissage",
+      "category": "other",
+      "base": "brut_total",
+      "rateEmployer": 0.0068,
+      "rateEmployee": 0,
+      "rateTotal": 0.0068,
+      "notes": "0.68% de la masse salariale"
+    },
+    {
+      "id": "prevoyance_cadre",
+      "label": "Executive Insurance",
+      "labelFr": "Prévoyance cadre",
+      "category": "health",
+      "base": "brut_plafonne_pmss",
+      "rateEmployer": 0.015,
+      "rateEmployee": 0,
+      "rateTotal": 0.015,
+      "cadreOnly": true,
+      "notes": "Minimum 1.50% sur tranche A pour les cadres"
+    },
+    {
+      "id": "apec",
+      "label": "APEC",
+      "labelFr": "APEC (cadres)",
+      "category": "unemployment",
+      "base": "brut_plafonne_pmss",
+      "rateEmployer": 0.00036,
+      "rateEmployee": 0.00024,
+      "rateTotal": 0.0006,
+      "cadreOnly": true,
+      "notes": "Plafonné à 4 PMSS, cadres uniquement"
+    }
+  ],
+  "sources": [
+    "URSSAF - Taux de cotisations au 1er janvier 2025",
+    "AGIRC-ARRCO - Barème 2025",
+    "Service-public.fr - Cotisations sociales"
+  ],
+  "lastUpdated": "2025-01-01"
+}
