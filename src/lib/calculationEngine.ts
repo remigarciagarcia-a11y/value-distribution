@@ -17,6 +17,14 @@ import type {
   Diagnostic,
 } from './types';
 
+import {
+  computePartSociale,
+  computeEmployeeSalary,
+  toPartSocialeVM,
+  type PartSocialeAutomationInputs,
+  type EmployeeSalaryResult,
+} from './automation';
+
 // ===== CORE CALCULATIONS =====
 
 /**
@@ -235,25 +243,105 @@ export function calculatePartFonctionnelle(inputs: SimulatorInputs, vp: number |
   };
 }
 
+/**
+ * Build automation inputs from SimulatorInputs
+ */
+function buildAutomationInputs(inputs: SimulatorInputs): PartSocialeAutomationInputs {
+  const { base, sociale } = inputs;
+  const diviseur = getDiviseur(inputs);
+  
+  return {
+    settings: {
+      year: parseInt(base.anneeReference) || 2025,
+      divisorMode: base.ponderation,
+      headcount: base.effectif,
+      fte: base.etp,
+    },
+    employee: {
+      grossMonthly: sociale.employee?.grossMonthly ?? sociale.employee?.brutMonthly ?? null,
+      brutMonthly: sociale.employee?.brutMonthly ?? null,
+      pasRate: sociale.employee?.pasRate ?? null,
+      irMonthlyManual: sociale.employee?.irMonthlyManual ?? null,
+      netAfterIrMonthly: null,
+      irMonthly: sociale.impotRevenu,
+      status: sociale.employee?.status ?? 'cadre',
+      primes: inputs.partPersonnelle.primes.map(p => ({ label: p.label, montant: p.montant })),
+      avantages: inputs.partPersonnelle.avantages.map(a => ({ label: a.label, montant: a.montant })),
+    },
+    company: {
+      caAnnualHT: base.caAnnuelHT,
+      taxableProfitAnnual: sociale.company?.taxableProfitAnnual ?? null,
+      isReducedRateEnabled: sociale.company?.isReducedRateEnabled ?? false,
+      isReducedRateCap: 42500,
+      vatSales: (sociale.vat?.sales ?? []).filter(s => s.baseHTAnnual !== null).map(s => ({
+        rate: s.rate,
+        baseHTAnnual: s.baseHTAnnual!,
+      })),
+      vatPurchases: (sociale.vat?.purchases ?? []).filter(p => p.baseHTAnnual !== null).map(p => ({
+        rate: p.rate,
+        baseHTAnnual: p.baseHTAnnual!,
+      })),
+    },
+    automation: {
+      contribMode: {
+        mode: sociale.automation?.cotisationsMode?.mode ?? 'manual',
+        manualValueMonthly: sociale.automation?.cotisationsMode?.manualValue ?? null,
+      },
+      irMode: {
+        mode: sociale.automation?.irMode?.mode ?? 'auto',
+        manualValueMonthly: sociale.automation?.irMode?.manualValue ?? null,
+      },
+      isMode: {
+        mode: sociale.automation?.isMode?.mode ?? 'manual',
+        manualValueAnnual: sociale.impotSocietes,
+      },
+      vatMode: {
+        mode: sociale.automation?.vatMode?.mode ?? 'manual',
+        manualValueAnnual: sociale.automation?.vatMode?.manualValue ?? null,
+      },
+    },
+  };
+}
+
 export function calculatePartSociale(inputs: SimulatorInputs, vp: number | null): PartSocialeVM {
   const { sociale } = inputs;
+  const automationInputs = buildAutomationInputs(inputs);
   
-  // Social contributions are already monthly per person
+  // Check if we should use automation (at least one mode is 'auto')
+  const useAutomation = 
+    automationInputs.automation.contribMode.mode === 'auto' ||
+    automationInputs.automation.irMode.mode === 'auto' ||
+    automationInputs.automation.isMode.mode === 'auto' ||
+    automationInputs.automation.vatMode.mode === 'auto';
+  
+  if (useAutomation) {
+    // Use the automation engine
+    const partSocialeResult = computePartSociale(automationInputs);
+    const vmResult = toPartSocialeVM(partSocialeResult, vp);
+    
+    return {
+      lines: vmResult.lines.map(l => ({
+        label: l.label,
+        value: l.value,
+        pct: l.pct,
+      })),
+      total: {
+        total: vmResult.total.total,
+        pct: vmResult.total.pct,
+        isPartial: vmResult.total.isPartial,
+      },
+    };
+  }
+  
+  // Fallback to manual mode (legacy)
   const lines: LineValue[] = [
     { label: 'Santé', value: sociale.sante, pct: null },
     { label: 'Retraite', value: sociale.retraite, pct: null },
     { label: 'Chômage / sécurisation des parcours', value: sociale.chomage, pct: null },
     { label: 'Solidarité, famille, autres', value: sociale.solidarite, pct: null },
     { label: 'CSG / CRDS', value: sociale.csgCrds, pct: null },
-    { label: 'Impôt sur le revenu (7%)', value: sociale.impotRevenu, pct: null },
+    { label: 'Impôt sur le revenu', value: sociale.impotRevenu, pct: null },
   ];
-  
-  // Add IS converted from annual
-  const diviseur = getDiviseur(inputs);
-  if (sociale.impotSocietes !== null && diviseur !== null) {
-    const isMonthly = annualToMonthlyPerPerson(sociale.impotSocietes, diviseur);
-    // IS is included in sociale but displayed separately in reference
-  }
   
   lines.forEach(line => {
     line.pct = calculatePct(line.value, vp);
@@ -272,12 +360,32 @@ export function calculatePartSociale(inputs: SimulatorInputs, vp: number | null)
 }
 
 export function calculatePartPersonnelle(inputs: SimulatorInputs, vp: number | null): PartPersonnelleVM {
-  const { partPersonnelle } = inputs;
+  const { partPersonnelle, sociale } = inputs;
+  const automationInputs = buildAutomationInputs(inputs);
+  
+  // Calculate employee salary using automation if in auto mode
+  let netAfterIR: number | null = partPersonnelle.salaireNetApresIR;
+  
+  // If grossMonthly is provided and we're in auto mode, calculate net after IR
+  const grossMonthly = sociale.employee?.grossMonthly ?? sociale.employee?.brutMonthly ?? null;
+  const useAutoSalary = grossMonthly !== null && grossMonthly > 0;
+  
+  if (useAutoSalary) {
+    const salaryResult = computeEmployeeSalary(
+      automationInputs.employee,
+      automationInputs.settings,
+      automationInputs.automation
+    );
+    
+    if (salaryResult.netAfterIR !== null) {
+      netAfterIR = salaryResult.netAfterIR;
+    }
+  }
   
   const salaireLine: LineValue = {
     label: 'Salaire net après IR',
-    value: partPersonnelle.salaireNetApresIR,
-    pct: calculatePct(partPersonnelle.salaireNetApresIR, vp),
+    value: netAfterIR,
+    pct: calculatePct(netAfterIR, vp),
   };
   
   const primeLines: LineValue[] = partPersonnelle.primes.map(p => ({
@@ -293,7 +401,7 @@ export function calculatePartPersonnelle(inputs: SimulatorInputs, vp: number | n
   }));
   
   const allValues = [
-    partPersonnelle.salaireNetApresIR,
+    netAfterIR,
     ...partPersonnelle.primes.map(p => p.montant),
     ...partPersonnelle.avantages.map(a => a.montant),
   ];
