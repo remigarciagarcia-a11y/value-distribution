@@ -178,6 +178,11 @@ export function SimulatorForm({ inputs, onChange }: SimulatorFormProps) {
     if (scenario) {
       onChange(scenario.data);
       setSelectedScenarioId(scenarioId);
+      // Passer en mode auto pour entreprise et fonctionnelle quand un scénario est sélectionné
+      if (scenarioId !== 'empty') {
+        setEntrepriseAutoMode(true);
+        setFonctionnelleAutoMode(true);
+      }
     }
   };
   
